@@ -27,6 +27,7 @@ pars <- list(
     eta = c(30, 180, 720, Inf)
 )
 
+# Generate hazard and VE data
 dt <- generate_par_sets(pars) %>%
     mutate(par_set_id = row_number()) %>%
     group_by(par_set_id) %>%
@@ -49,6 +50,7 @@ dt <- generate_par_sets(pars) %>%
     select(eta, time, estd_ve, hazard_ratio, avg_vax_protect, ends_with("_hazard")) %>%
     pivot_longer(!c(eta, time))
 
+# Consistent figure aesthetics
 lt <- c(
   "unvax_hazard" = "solid",
   "vax_hazard" = "22",
@@ -103,6 +105,7 @@ common_plt <- list(
     background_grid()
 )
 
+# Panel A: vaccinated and unvaccinated time-varying infeciton hazard vs. waning
 hazard_names <- c("unvax_hazard", "vax_hazard")
 hazard_plt <- ggplot(dt %>% filter(name %in% hazard_names)) +
     aes(
@@ -138,6 +141,7 @@ hazard_plt <- ggplot(dt %>% filter(name %in% hazard_names)) +
     ) +
     labs(x = "Time (days)", y = "Hazard")
 
+# Panel B: VE estimates vs two reference values (hazard ratio, average vax protection)
 ve_names <- c("avg_vax_protect", "hazard_ratio", "estd_ve")
 ve_plt <- ggplot(dt %>% filter(name %in% ve_names)) +
     aes(
@@ -163,6 +167,7 @@ ve_plt <- ggplot(dt %>% filter(name %in% ve_names)) +
     ) +
     labs(x = "Time (days)", y = "Vaccine effectiveness (%)")
 
+# Combine panels and save plot
 plt <- plot_grid(
   hazard_plt, ve_plt,
   ncol = 1,
