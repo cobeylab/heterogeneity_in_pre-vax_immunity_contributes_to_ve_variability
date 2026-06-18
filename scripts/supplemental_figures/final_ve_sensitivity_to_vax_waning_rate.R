@@ -6,6 +6,7 @@ library(paletteer)
 source(here("src", "full_VE_model.R"))
 source(here("src", "data_generation.R"))
 
+# Helper function to clean up cell label values that are close to zero.
 clean_label <- function(x, sigdig) {
   return(ifelse(abs(x) < 1e-7, 0, signif(x, digits = sigdig)))
 }
