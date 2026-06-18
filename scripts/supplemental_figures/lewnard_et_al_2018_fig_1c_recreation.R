@@ -13,7 +13,7 @@ opts = list(
     instantaneous = FALSE
 )
 
-# Heatmap scenario parameters
+# Scenario parameters
 pars <- list(
     start_time = 200,
     end_time = 200,

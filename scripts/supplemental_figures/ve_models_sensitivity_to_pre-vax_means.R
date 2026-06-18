@@ -13,10 +13,12 @@ facet_labels = c(
     clreg_ve = "VE conditional"
 )
 
-### final ve sweeping across lambda, epsilon, theta_0 (NO WANING)
+### Final ve sweeping across infection hazard, mean pre-vaccination risk, and
+### true vaccine protection (NO WANING)
 
 set.seed(0)
 
+# Scenario parameters
 pars = list(
     start_time = 0,
     end_time = 200,
@@ -39,16 +41,19 @@ pars = list(
 
 pars$time <- pars$end_time
 
+# Scenario options (no waning, continuous pre-vaccination risk, VE from cumulative attack rates)
 opts = list(
     waning = FALSE,
     heterogeneity = TRUE,
     instantaneous = FALSE
 )
-
 cumul_ve_opts <- opts
+
+# Create copy of options for estimating VE from instantaneous incidence rates
 insnt_ve_opts <- opts
 insnt_ve_opts$instantaneous <- TRUE
 
+# Generate parameter sets
 pars_dt <- crossing(!!!pars) %>%
     mutate(par_set_id = row_number()) %>%
     group_by(par_set_id) %>%
@@ -57,6 +62,7 @@ pars_dt <- crossing(!!!pars) %>%
 
 print(paste0("generating ", nrow(pars_dt)," no waning scenario linelists"))
 
+# Generate VE data (analytical and logistic regression models)
 final_ve_dt <- pars_dt %>%
     rowwise_mutate(counts = list(generate_counts(pars, opts))) %>%
     mutate(linelist = map(counts, function(x) generate_linelist(x))) %>%
@@ -71,6 +77,7 @@ final_ve_dt <- pars_dt %>%
 
 print("generating no waning scenario plot")
 
+# Calculate adjusted R-squared for each model comparison
 no_waning_insnt_vs_cumul_lm <- lm(insnt_ve ~ cumul_ve, data = final_ve_dt)
 no_waning_ulreg_vs_cumul_lm <- lm(ulreg_ve ~ cumul_ve, data = final_ve_dt)
 no_waning_clreg_vs_cumul_lm <- lm(clreg_ve ~ cumul_ve, data = final_ve_dt)
@@ -79,6 +86,7 @@ no_waning_insnt_vs_cumul_adj_rsq <- summary(no_waning_insnt_vs_cumul_lm)$adj.r.s
 no_waning_ulreg_vs_cumul_adj_rsq <- summary(no_waning_ulreg_vs_cumul_lm)$adj.r.squared
 no_waning_clreg_vs_cumul_adj_rsq <- summary(no_waning_clreg_vs_cumul_lm)$adj.r.squared
 
+# Calculate absolute average difference between VE estimates
 no_waning_ve_compare <- final_ve_dt %>%
     select(ends_with("_ve")) %>%
     pivot_longer(!cumul_ve) %>%
@@ -90,6 +98,7 @@ no_waning_ve_compare <- final_ve_dt %>%
                        no_waning_insnt_vs_cumul_adj_rsq,
                        no_waning_ulreg_vs_cumul_adj_rsq))
 
+# Scatterplots comparing VE estimates from different models across scenarios
 no_waning_plt <- final_ve_dt %>%
     pivot_longer(c(insnt_ve, ulreg_ve, clreg_ve)) %>%
     ggplot() +
@@ -134,10 +143,12 @@ no_waning_plt <- final_ve_dt %>%
 
 rm(pars_dt, final_ve_dt)
 
-### final ve sweeping across lambda, epsilon, theta_0, eta (WITH WANING)
+### Final ve sweeping across infection hazard, mean pre-vaccination risk, and
+### true vaccine protection (WITH WANING)
 
 set.seed(0)
 
+# Scenario parameters
 pars = list(
     start_time = 0,
     end_time = 200,
@@ -160,16 +171,19 @@ pars = list(
 
 pars$time <- pars$end_time
 
+# Scenario options (no waning, continuous pre-vaccination risk, VE from cumulative attack rates)
 opts = list(
     waning = TRUE,
     heterogeneity = TRUE,
     instantaneous = FALSE
 )
-
 cumul_ve_opts <- opts
+
+# Create copy of options for estimating VE from instantaneous incidence rates
 insnt_ve_opts <- opts
 insnt_ve_opts$instantaneous <- TRUE
 
+# Generate parameter sets
 pars_dt <- crossing(!!!pars) %>%
     mutate(par_set_id = row_number()) %>%
     group_by(par_set_id) %>%
@@ -178,6 +192,7 @@ pars_dt <- crossing(!!!pars) %>%
 
 print(paste0("generating ", nrow(pars_dt)," waning scenario linelists"))
 
+# Generate VE data (analytical and logistic regression models)
 final_ve_dt <- pars_dt %>%
     rowwise_mutate(counts = list(generate_counts(pars, opts))) %>%
     mutate(linelist = map(counts, function(x) generate_linelist(x))) %>%
@@ -192,6 +207,7 @@ final_ve_dt <- pars_dt %>%
 
 print("generating waning scenario plot")
 
+# Calculate adjusted R-squared for each model comparison
 waning_insnt_vs_cumul_lm <- lm(insnt_ve ~ cumul_ve, data = final_ve_dt)
 waning_ulreg_vs_cumul_lm <- lm(ulreg_ve ~ cumul_ve, data = final_ve_dt)
 waning_clreg_vs_cumul_lm <- lm(clreg_ve ~ cumul_ve, data = final_ve_dt)
@@ -200,6 +216,7 @@ waning_insnt_vs_cumul_adj_rsq <- summary(waning_insnt_vs_cumul_lm)$adj.r.squared
 waning_ulreg_vs_cumul_adj_rsq <- summary(waning_ulreg_vs_cumul_lm)$adj.r.squared
 waning_clreg_vs_cumul_adj_rsq <- summary(waning_clreg_vs_cumul_lm)$adj.r.squared
 
+# Calculate absolute average difference between VE estimates
 waning_ve_compare <- final_ve_dt %>%
     select(ends_with("_ve")) %>%
     pivot_longer(!cumul_ve) %>%
@@ -211,6 +228,7 @@ waning_ve_compare <- final_ve_dt %>%
                        waning_insnt_vs_cumul_adj_rsq,
                        waning_ulreg_vs_cumul_adj_rsq))
 
+# Scatterplots comparing VE estimates from different models across scenarios
 waning_plt <- final_ve_dt %>%
     pivot_longer(c(insnt_ve, ulreg_ve, clreg_ve)) %>%
     ggplot() +

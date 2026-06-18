@@ -39,7 +39,7 @@ opts = list(
     instantaneous = FALSE
 )
 
-# Heatmap scenario parameters (only mean pre-vaccination risk varies)
+# Heatmap scenario parameters (only pre-vaccination risk heterogeneity varies)
 pars <- list(
     start_time = 200,
     end_time = 200,
@@ -52,7 +52,7 @@ pars <- list(
     alpha_u = seq(0.2, 2, 0.2)
 )
 
-# Calculate bias between starting VE and true vaccine protection for each scenario
+# Calculate bias between final VE and true vaccine protection for each scenario
 heatmap_dt <- generate_par_sets(pars, include_early = FALSE) %>%
     mutate(par_set_id = row_number()) %>%
     group_by(par_set_id) %>%
@@ -73,7 +73,7 @@ fill_lim <- round(max(
     abs(max(heatmap_dt$fill_val))
 )) * 1.01
 
-# Heatmap of starting VE bias across mean pre-vaccination risk values and true vaccine protection
+# Heatmap of final VE bias across pre-vaccination risk heterogeneity and true vaccine protection
 heatmap_plot <- ggplot(heatmap_dt) +
     aes(
         x = alpha_u,
@@ -95,7 +95,6 @@ heatmap_plot <- ggplot(heatmap_dt) +
         limits = c(-fill_lim, fill_lim),
         breaks = c(0)
     ) +
-    # coord_cartesian(xlim = c(-0.05, 1.05), ylim = c(-0.05, 1.05), expand = FALSE) +
     theme_cowplot(14) +
     theme(
         legend.position = "top",

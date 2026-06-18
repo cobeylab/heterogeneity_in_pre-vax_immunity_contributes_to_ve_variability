@@ -10,14 +10,14 @@ clean_label <- function(x, sigdig) {
   return(ifelse(abs(x) < 1e-7, 0, signif(x, digits = sigdig)))
 }
 
-# Scenario options (no waning, continuous risk distributions, VE from cumulative attack rates)
+# Scenario options (no waning, no continuous risk distributions, VE from cumulative attack rates)
 opts = list(
     waning = TRUE,
     heterogeneity = FALSE,
     instantaneous = FALSE
 )
 
-# Heatmap scenario parameters (only mean pre-vaccination risk varies)
+# Heatmap scenario parameters
 pars <- list(
     start_time = 200,
     end_time = 200,

@@ -6,14 +6,14 @@ library(paletteer)
 source(here("src", "full_VE_model.R"))
 source(here("src", "data_generation.R"))
 
-# Scenario options (no waning, continuous risk distributions, VE from cumulative attack rates)
+# Scenario options (no waning, no continuous risk distributions, VE from cumulative attack rates)
 opts = list(
     waning = TRUE,
     heterogeneity = FALSE,
     instantaneous = FALSE
 )
 
-# Heatmap scenario parameters (only mean pre-vaccination risk varies)
+# Scenario parameters
 pars <- list(
     start_time = 0,
     end_time = 200,
