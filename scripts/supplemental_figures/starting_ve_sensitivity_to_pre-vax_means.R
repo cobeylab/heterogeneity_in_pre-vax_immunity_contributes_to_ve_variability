@@ -67,7 +67,7 @@ heatmap_dt <- generate_par_sets(pars, include_early = FALSE) %>%
     unnest(pars)
 
 # Cleaning up color fill values for better heatmap presentation
-heatmap_dt$fill_val <- clean_fill(heatmap_dt$starting_ve_bias, xmin = NA, xmax = NA)
+heatmap_dt$fill_val <- clean_fill(heatmap_dt$starting_ve_bias, xmin = NA, xmax = 100)
 fill_lim <- round(max(
     abs(min(heatmap_dt$fill_val)),
     abs(max(heatmap_dt$fill_val))
