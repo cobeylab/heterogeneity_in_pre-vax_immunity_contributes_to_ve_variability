@@ -61,8 +61,12 @@ total_vaccine_effect <- function(time, p, o) {
 
     if (o$waning) {
         stopifnot(p$eta > 0)
-        numer <- (2^(-time / p$eta)) * (2^(time / p$eta) - 1) * p$eta * (p$theta_0 - 1)
-        return(time + (numer / log(2)))
+        if (is.infinite(p$eta)) {
+            return(p$theta_0 * time)
+        } else {
+            numer <- (2^(-time / p$eta)) * (2^(time / p$eta) - 1) * p$eta * (p$theta_0 - 1)
+            return(time + (numer / log(2)))
+        }
     } else {
         return(p$theta_0 * time)
     }
