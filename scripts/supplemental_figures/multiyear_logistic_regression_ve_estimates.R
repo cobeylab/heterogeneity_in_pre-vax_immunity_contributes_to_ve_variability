@@ -33,6 +33,9 @@ config <- parseTOML(config_path)
 pars <- config$parameters
 exp_name <- pars$exp_name
 
+# this will correspond to a test-negative cumulative attack rate of ~75%
+beta_test_neg <- pars$beta * 0.75
+
 dat_dir <- here("data", exp_name)
 res_filepath <- here(dat_dir, "results.csv")
 
@@ -44,17 +47,15 @@ test_neg_infection_hazard <- function(time, beta, amplifier, shift = 0.5) {
 
 # estimate vaccinated test-negative infections at a given time
 # (taking into account the time step width)
-vax_test_neg_infections <- function(time, pars, shift = 0.5) {
-    beta_test_neg <- pars$beta * 0.75
-    haz <- test_neg_infection_hazard(time, beta_test_neg, pars$seasonality_amplifier, shift)
+vax_test_neg_infections <- function(time, beta, pars, shift = 0.5) {
+    haz <- test_neg_infection_hazard(time, beta, pars$seasonality_amplifier, shift)
     return(pars$pop_size * pars$vax_coverage * haz * pars$dt)
 }
 
 # estimate unvaccinated test-negative infections at a given time
 # (taking into account the time step width)
-unvax_test_neg_infections <- function(time, pars, shift = 0.5) {
-    beta_test_neg <- pars$beta * 0.75
-    haz <- test_neg_infection_hazard(time, beta_test_neg, pars$seasonality_amplifier, shift)
+unvax_test_neg_infections <- function(time, beta, pars, shift = 0.5) {
+    haz <- test_neg_infection_hazard(time, beta, pars$seasonality_amplifier, shift)
     return(pars$pop_size * (1 - pars$vax_coverage) * haz * pars$dt)
 }
 
@@ -72,8 +73,8 @@ dt <- read_csv(res_filepath, show_col_types = FALSE) %>%
     mutate(
         v_tp_inf = mean(vax_inf) * per_10k,
         u_tp_inf = mean(unvax_inf) * per_10k,
-        v_tn_inf = vax_test_neg_infections(t, pars) * per_10k,
-        u_tn_inf = unvax_test_neg_infections(t, pars) * per_10k
+        v_tn_inf = vax_test_neg_infections(t, beta_test_neg, pars) * per_10k,
+        u_tn_inf = unvax_test_neg_infections(t, beta_test_neg, pars) * per_10k
     ) %>%
     ungroup() %>%
     select(exp, t, year, ends_with("_tp_inf"), ends_with("_tn_inf")) %>%
