@@ -5,6 +5,7 @@ library(RcppTOML)
 library(cowplot)
 library(paletteer)
 
+# parse command line arguments
 if (interactive()) {
     parser <- OptionParser()
     parser <- add_option(parser, "--config", help = "path to config TOML file (rel path from this script)")
@@ -20,6 +21,7 @@ if (is.null(parsed_args[["config"]])) {
   quit("no", status = 1, runLast = FALSE)
 }
 
+# parse TOML parameter file
 script_dir <- here("scripts", "fig3")
 config_path <- here(script_dir, parsed_args[["config"]])
 
@@ -27,12 +29,13 @@ config <- parseTOML(config_path)
 pars <- config$parameters
 exp_name <- pars$exp_name
 
+# read in simulation data
+print("READING DATA")
+
 dat_dir <- here("data", exp_name)
 exp_filepath <- here(dat_dir, "experiments.csv")
 res_filepath <- here(dat_dir, "results.csv")
 suscep_filepath <- here(dat_dir, "suscep", "suscep_1-1.csv")
-
-print("READING DATA")
 
 experiments <- read_csv(exp_filepath, show_col_types = FALSE)
 results <- read_csv(res_filepath, show_col_types = FALSE)
@@ -42,6 +45,7 @@ print("CLEANING INFECTION DATA")
 
 per_10k <- 1e3 / pars$pop_size
 
+# calculate mean daily infections per 10k people by vaccination status
 inf_dt <- results %>%
     filter(t > 0.005) %>%
     mutate(
@@ -55,14 +59,13 @@ inf_dt <- results %>%
         u_inf = mean(unvax_inf) * per_10k
     ) %>%
     ungroup() %>%
-    mutate(
-        v_inf_ma = stats::filter(v_inf, rep(1/7, 7), sides = 1),
-        u_inf_ma = stats::filter(u_inf, rep(1/7, 7), sides = 1)
-    ) %>%
     pivot_longer(!c(exp, t))
 
 print("CLEANING SUSCEPTIBILITY DATA")
 
+# calculate mean pre-vaccination susceptibilities each year
+# a random sample of the total susceptibility data (5 million people each year)
+# is used to draw distributions
 suscep_dt <- suscep %>%
     mutate(
         year = ceiling(t) + 1,
@@ -75,11 +78,12 @@ suscep_dt <- suscep %>%
 
 print("CLEANING VE DATA")
 
+# ve is calculated from time-varying cumulative attack rates each year
 ve_dt <- results %>%
     mutate(
         step = t / pars$dt,
-        year = ceiling(step * pars$dt),
-        time = (step * pars$dt) - (year - 1)
+        year = ceiling(t),
+        time = t - (year - 1)
     ) %>%
     group_by(exp, rep, year) %>%
     mutate(
@@ -96,27 +100,9 @@ ve_dt <- results %>%
         cumul_vax_inf = cumul_vax_inf / (vax_coverage * pop_size),
         cumul_unvax_inf = cumul_unvax_inf / ((1 - vax_coverage) * pop_size),
         estd_ve = (1 - (cumul_vax_inf / cumul_unvax_inf)) * 100
-    ) %>%
-    group_by(exp, year, time) %>%
-    summarize(
-        lower = quantile(estd_ve, probs = 0.25, na.rm = TRUE),
-        med = quantile(estd_ve, probs = 0.5, na.rm = TRUE),
-        upper = quantile(estd_ve, probs = 0.75, na.rm = TRUE)
-    ) %>%
-    ungroup() %>%
-    left_join(
-        select(experiments, all_of(c("exp_idx", "vax_efficacy", "vax_imm_halflife", "pr_vax_to_vax"))),
-        by = join_by(exp == exp_idx)
-    ) %>%
-    rowwise() %>%
-    mutate(
-        waning_label = ifelse(vax_imm_halflife == 0.0, 
-            "Constant vaccine protection",
-            "Waning vaccine protection")
-    ) %>%
-    ungroup() %>%
-    select(-c(vax_imm_halflife))
+    )
 
+# data used to draw background figure stipes for each simulated year
 rect_df <- ve_dt %>%
     distinct(year) %>%
     mutate(
@@ -125,27 +111,8 @@ rect_df <- ve_dt %>%
         fill = factor(as.numeric(factor(year)) %% 2)
     )
 
-true_eff_label <- function(x, y, label, xoff = 55, yoff = 0.01) {
-    box <- annotate(
-        "rect",
-        xmin = x - xoff,
-        xmax = x + xoff,
-        ymin = y - yoff,
-        ymax = y + yoff,
-        fill = "#ffffffaa"
-    )
-
-    text <- annotate(
-        "text",
-        x = x,
-        y = y,
-        label = label
-    )
-
-    return(list(box, text))
-}
-
-true_eff_line <- function(xmin, xmax, y) {
+# helper function to draw and label true vaccine protection line
+true_vax_protect_line <- function(xmin, xmax, y) {
     line <- annotate(
         "segment",
         x = xmin,
@@ -166,6 +133,7 @@ true_eff_line <- function(xmin, xmax, y) {
     return(list(line, label))
 }
 
+# code to help draw split violin plots used to show pre-vaccination susceptibility distributions
 # from https://stackoverflow.com/questions/35717353/split-violin-plot-with-ggplot2
 GeomSplitViolin <- ggproto("GeomSplitViolin", GeomViolin, 
                            draw_group = function(self, data, ..., draw_quantiles = NULL) {
@@ -197,6 +165,7 @@ geom_split_violin <- function(mapping = NULL, data = NULL, stat = "ydensity", po
         position = position, show.legend = show.legend, inherit.aes = inherit.aes, 
         params = list(trim = trim, scale = scale, draw_quantiles = draw_quantiles, na.rm = na.rm, ...))
 }
+# end of code from stack overflow
 
 print("PLOTTING INFECTION DATA")
 
@@ -210,8 +179,7 @@ inf_plt <- ggplot(inf_dt) +
     aes(
         x = t,
         y = value,
-        color = name,
-        alpha = name
+        color = name
     ) + 
     geom_line(linewidth = 1) +
     coord_cartesian(xlim = c(0, 6.1), ylim = c(0, 3.5),  expand = FALSE) +
@@ -222,18 +190,10 @@ inf_plt <- ggplot(inf_dt) +
         breaks = c("v_inf", "u_inf"),
         values = c(
             "v_inf" = "dodgerblue",
-            "u_inf" = "darkorange",
-            "v_inf_ma" = "dodgerblue",
-            "u_inf_ma" = "darkorange"
+            "u_inf" = "darkorange"
         ),
         labels = c("Vaccinated", "Unvaccinated")
-        ) +
-    scale_alpha_manual(
-        name = NULL,
-        breaks = c("v_inf", "u_inf", "v_inf_ma", "u_inf_ma"),
-        values = c(1, 1, 0, 0),
-        guide = "none"
-        ) +
+    ) +
     theme_cowplot() +
     background_grid(major = "y") +
     theme(
@@ -248,8 +208,9 @@ inf_plt <- ggplot(inf_dt) +
 
 print("PLOTTING VE DATA")
 
+# remove early noisy ve trajectory
 ve_dt <- ve_dt %>%
-  mutate(med = ifelse(time < 0.1, NA, med))
+  mutate(estd_ve = ifelse(time < 0.1, NA, estd_ve))
 
 final_ve_plt <- ggplot(ve_dt) +
     geom_rect(
@@ -260,11 +221,9 @@ final_ve_plt <- ggplot(ve_dt) +
     ) +
     aes(
         x = time + (year - 1),
-        ymin = lower,
-        y = med,
-        ymax = upper
+        y = estd_ve
     ) +
-    true_eff_line(0, 6, 50) +
+    true_vax_protect_line(0, 6, 50) +
     geom_hline(yintercept = 0, color = "gray25", linewidth = 0.5) +
     geom_line(color = "gray50", linewidth = 1) +
     geom_point(
