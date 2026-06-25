@@ -26,18 +26,6 @@ dt = 0.005
 # synthetic population size
 pop_size = 5000000
 
-# number of people initially infected
-initial_infected = 0
-
-# number of people initially recovered
-initial_recovered = 0
-
-# simulate transmission between individuals (if false, infection hazard is exogenous)
-simulate_transmission = false
-
-# probability of externally seeded inf
-pr_seeded_inf = 0.0
-
 # average infection hazard for normal years
 beta = 1.0
 
@@ -50,13 +38,10 @@ seasonality_amplifier = 1.0
 # seasonal forcing shift
 seasonality_shift = 0.5
 
-# parameters controlling transition rates between SEIR compartments
-# for simulations with an exogenous infection hazard and where susceptibility is
-# modeled using waning infection immunity, large values are used so that people
-# move back to the susceptibile compartment quickly
-sigma = 1e5 # 1 / average latent period
-gamma = 1e5 # 1 / average infection duration
-omega = 1e5 # 1 / average immunity duration
+# 1 / average infection duration
+# with a high rate, people spend almost no time in the infected state
+# this allows only the waning susceptibility to control how long until re-infections occur
+gamma = 1e5
 
 # average baseline susceptibility
 vax_mean_pre_vax_suscep = 1.0
