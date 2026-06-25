@@ -12,48 +12,48 @@ end
 
 # Define model parameters and their data types (must match TOML parameter file)
 @kwdef struct Parameters{F<:AbstractFloat, I<:Integer, S<:AbstractString, B<:Bool}
-    exp_name::S                     # experiment name
-    exp_idx::I                      # experiment ID number
+    exp_name::S                   # experiment name
+    exp_idx::I                    # experiment ID number
 
-    save_linelist::B                # should the infection linelist be saved and reported
-    save_current_suscep::B          # should pre-vax susceptibilities be saved and reported
+    save_linelist::B              # should the infection linelist be saved and reported
+    save_current_suscep::B        # should pre-vax susceptibilities be saved and reported
 
-    tmp_dir::S                      # path to directory for temporary data
-    sim_dir::S                      # path to directory for simulation data
+    tmp_dir::S                    # path to directory for temporary data
+    sim_dir::S                    # path to directory for simulation data
 
-    nrep::I                         # number of simulation replicates
+    nrep::I                       # number of simulation replicates
 
-    tmax::F                         # maximum simulation time
-    t_boost_transmission::F         # time when increased transmission occurs
-    dt::F                           # simulation time step size
+    tmax::F                       # maximum simulation time
+    t_boost_transmission::F       # time when increased transmission occurs
+    dt::F                         # simulation time step size
 
-    pop_size::I                     # synthetic population size
+    pop_size::I                   # synthetic population size
 
-    beta::F                         # exogenous infection hazard
-    beta_boosted::F                 # infection hazard during year of increased transmission
+    beta::F                       # exogenous infection hazard
+    beta_boosted::F               # infection hazard during year of increased transmission
 
-    seasonality_amplifier::F        # amplitude modifier for seasonal forcing
-    seasonality_shift::F            # phase shift for seasonal forcing
+    seasonality_amplifier::F      # amplitude modifier for seasonal forcing
+    seasonality_shift::F          # phase shift for seasonal forcing
 
-    gamma::F                        # 1 / average infection duration
+    gamma::F                      # 1 / average infection duration
 
-    vax_mean_pre_vax_suscep::F      # initial vaccinaed pre-vax suscep distribution mean
-    unvax_mean_pre_vax_suscep::F    # initial unvaccinaed pre-vax suscep distribution mean
+    vax_mean_pre_vax_suscep::F    # initial vaccinaed pre-vax suscep distribution mean
+    unvax_mean_pre_vax_suscep::F  # initial unvaccinaed pre-vax suscep distribution mean
 
-    vax_pre_vax_suscep_shape::F     # initial vaccinaed pre-vax suscep distribution shape
-    unvax_pre_vax_suscep_shape::F   # initial unvaccinaed pre-vax suscep distribution shape
+    vax_pre_vax_suscep_shape::F   # initial vaccinaed pre-vax suscep distribution shape
+    unvax_pre_vax_suscep_shape::F # initial unvaccinaed pre-vax suscep distribution shape
 
-    inf_imm_halflife::F             # half life for exponential waning of infection immunity
+    inf_imm_halflife::F           # half life for exponential waning of infection immunity
 
-    allow_reinf::B                  # can individuals be re-infected
+    allow_reinf::B                # can individuals be re-infected
 
-    vax_coverage::F                 # approximate vaccination coverage
-    pr_vax_to_vax::F                # probability that a vaccinated person re-vaccinates
-    vaccination_checkpoint::F       # time point when re-vaccination occurs
-    t_vax_start::F                  # time when vaccination first occurs
+    vax_coverage::F               # approximate vaccination coverage
+    pr_vax_to_vax::F              # probability that a vaccinated person re-vaccinates
+    vaccination_checkpoint::F     # time point when re-vaccination occurs
+    t_vax_start::F                # time when vaccination first occurs
 
-    vax_efficacy::F                 # true vaccine protection
-    vax_imm_halflife::F             # half life for exponential waning of vaccine immunity
+    vax_efficacy::F               # true vaccine protection
+    vax_imm_halflife::F           # half life for exponential waning of vaccine immunity
 end
 
 # Helper function to create parameter object from TOML file
@@ -78,22 +78,22 @@ end
 
 # Object to store data for individuals
 @kwdef mutable struct Person
-    id::Int64 = -1                                  # person ID
-    state::DiseaseState = Susceptible               # current disease state
-    nextstate::DiseaseState = Susceptible           # next disease state
-    vax_status::VaccinationStatus = Unvaccinated    # current vaccination status
+    id::Int64 = -1                               # person ID
+    state::DiseaseState = Susceptible            # current disease state
+    nextstate::DiseaseState = Susceptible        # next disease state
+    vax_status::VaccinationStatus = Unvaccinated # current vaccination status
 
-    tnow::Float64 = 0.0                             # current simulation time
-    tnext::Float64 = 0.0                            # simulation time for next event
+    tnow::Float64 = 0.0                          # current simulation time
+    tnext::Float64 = 0.0                         # simulation time for next event
 
-    base_suscep::Float64 = 1.0                      # initial sampled susceptibility
-    current_suscep::Float64 = 1.0                   # current susceptibility
+    base_suscep::Float64 = 1.0                   # initial sampled susceptibility
+    current_suscep::Float64 = 1.0                # current susceptibility
 
-    foi::Float64 = 0.0                              # total force of infection this person faces
-    gamma::Float64 = 0.0                            # recovery rate
+    foi::Float64 = 0.0                           # total force of infection this person faces
+    gamma::Float64 = 0.0                         # recovery rate
 
-    inf_hist::Vector{Infection} = []                # stores this person's infections
-    vax_hist::Vector{Vaccination} = []              # stores this person's vaccinations
+    inf_hist::Vector{Infection} = []             # stores this person's infections
+    vax_hist::Vector{Vaccination} = []           # stores this person's vaccinations
 end
 
 # Check if a person has ever been vaccinated during the simulation
@@ -316,40 +316,6 @@ function sim_person!(par::Parameters, p::Person, step_tmax::Real)
     end
 end
 
-# Generate linelist data of each infection that occurred during the simulation
-function gen_line_list(exp_idx::Real, rep::Integer, people::Vector{Person})
-    person_ids = Integer[]
-    vax_status = VaccinationStatus[]
-    suscep_at_inf = AbstractFloat[]
-    vax_eff_at_inf = AbstractFloat[]
-    inf_times = AbstractFloat[]
-    rec_times = AbstractFloat[]
-
-    for p in people
-        if has_been_infected(p)
-            for i in p.inf_hist
-                push!(person_ids, p.id)
-                push!(vax_status, i.vax_status)
-                push!(suscep_at_inf, i.suscep_at_inf)
-                push!(vax_eff_at_inf, i.vax_eff_at_inf)
-                push!(inf_times, i.t_infection)
-                push!(rec_times, i.t_recovery)
-            end
-        end
-    end
-
-    return DataFrame(
-        exp = exp_idx,
-        sim_rep = rep,
-        person_id = person_ids,
-        vax_status = vax_status,
-        suscep_at_inf = suscep_at_inf,
-        vax_eff_at_inf = vax_eff_at_inf,
-        inf_time = inf_times,
-        rec_time = rec_times
-    )
-end
-
 # Calculate seasonally forced infection hazard
 function calculate_beta(par::Parameters, time)
     # decide if this is the time period when the increased hazard is used
@@ -540,6 +506,40 @@ function simulate(par::Parameters, rep::Real)
     df = generate_report(par.exp_idx, rep, report)
 
     return (df = df, people = people)
+end
+
+# Generate linelist data of each infection that occurred during the simulation
+function gen_line_list(exp_idx::Real, rep::Integer, people::Vector{Person})
+    person_ids = Integer[]
+    vax_status = VaccinationStatus[]
+    suscep_at_inf = AbstractFloat[]
+    vax_eff_at_inf = AbstractFloat[]
+    inf_times = AbstractFloat[]
+    rec_times = AbstractFloat[]
+
+    for p in people
+        if has_been_infected(p)
+            for i in p.inf_hist
+                push!(person_ids, p.id)
+                push!(vax_status, i.vax_status)
+                push!(suscep_at_inf, i.suscep_at_inf)
+                push!(vax_eff_at_inf, i.vax_eff_at_inf)
+                push!(inf_times, i.t_infection)
+                push!(rec_times, i.t_recovery)
+            end
+        end
+    end
+
+    return DataFrame(
+        exp = exp_idx,
+        sim_rep = rep,
+        person_id = person_ids,
+        vax_status = vax_status,
+        suscep_at_inf = suscep_at_inf,
+        vax_eff_at_inf = vax_eff_at_inf,
+        inf_time = inf_times,
+        rec_time = rec_times
+    )
 end
 
 # Save linelist of all simulated infections to CSV
