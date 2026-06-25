@@ -1,7 +1,6 @@
 # Define possible disease states for an individual
 @enum DiseaseState begin
     Susceptible
-    Exposed
     Infected
     Recovered
 end
@@ -37,7 +36,6 @@ end
     seasonality_amplifier::F        # amplitude modifier for seasonal forcing
     seasonality_shift::F            # phase shift for seasonal forcing
 
-    sigma::F                        # 1 / average latent period
     gamma::F                        # 1 / average infection duration
     omega::F                        # 1 / average recovered duration
 
@@ -94,7 +92,6 @@ end
     current_suscep::Float64 = 1.0                   # current susceptibility
 
     foi::Float64 = 0.0                              # total force of infection this person faces
-    sigma::Float64 = 0.0                            # latency rate
     gamma::Float64 = 0.0                            # recovery rate
     omega::Float64 = 0.0                            # immune protection waning rate
 
@@ -152,8 +149,8 @@ function susceptible!(p::Person, time)
     p.nextstate = Susceptible::DiseaseState
 end
 
-# Person transitions to exposed state (i.e., is infected)
-function expose!(par::Parameters, p::Person, time)
+# Person transitions to infected state (i.e., is infected)
+function infect!(par::Parameters, p::Person, time)
     inf = Infection(
         vax_status = vax_status(p),
         vax_eff_at_inf = is_vaccinated(p) ? current_vax_efficacy(par, p) : -1.0,
@@ -163,14 +160,8 @@ function expose!(par::Parameters, p::Person, time)
     push!(p.inf_hist, inf)
 
     p.tnext = time
-    p.nextstate = Exposed::DiseaseState
-    p.current_suscep = zero(p.current_suscep)
-end
-
-# Person transitions to infectious state
-function infect!(p::Person, time)
-    p.tnext = time
     p.nextstate = Infected::DiseaseState
+    p.current_suscep = zero(p.current_suscep)
 end
 
 # Person transitions to recovered state
@@ -214,7 +205,6 @@ function init_pop(par::Parameters)
             id = i,
             base_suscep = bs,
             foi = par.beta,
-            sigma = par.sigma,
             gamma = par.gamma,
             omega = par.omega,
             state = Susceptible::DiseaseState
@@ -300,25 +290,14 @@ function update_susceptible!(par::Parameters, p::Person, step_tmax::Real)
     if tau < step_tmax
         # if the sampled infection time is before the end of this time step, the
         # individual becomes infected
-        expose!(par, p, tau)
+        infect!(par, p, tau)
     else
         # otherwise, the individual remains susceptible
         susceptible!(p, step_tmax + eps())
     end
 end
 
-# Determine when an individual transitions from exposed to infectious
-function update_exposed!(p::Person)
-    # update individual's time, state
-    p.tnow = p.tnext
-    p.state = p.nextstate
-
-    # sample when the person transitions to infectious
-    t_inf = p.tnow + sample_exponential(1 / p.sigma)
-    infect!(p, t_inf)
-end
-
-# Determine when an individual transitions from infectious to recovered
+# Determine when an individual transitions from infected to recovered
 function update_infected!(p::Person)
     # update individual's time, state
     p.tnow = p.tnext
@@ -337,8 +316,8 @@ function update_recovered!(par::Parameters, p::Person)
 
     if par.allow_reinf
         # if re-infections are allowed, sample when the person transitions to susceptible
-        t_wane = p.tnow + sample_exponential(1 / p.omega)
-        susceptible!(p, t_wane)
+        t_return_to_suscep = p.tnow + sample_exponential(1 / p.omega)
+        susceptible!(p, t_return_to_suscep)
     else
         # otherwise, the person remains in the recovered state forever
         p.tnext = Inf
@@ -352,8 +331,6 @@ function sim_person!(par::Parameters, p::Person, step_tmax::Real)
     while p.tnext < step_tmax
         if p.nextstate == Susceptible::DiseaseState
             update_susceptible!(par, p, step_tmax)
-        elseif p.nextstate == Exposed::DiseaseState
-            update_exposed!(p)
         elseif p.nextstate == Infected::DiseaseState
             update_infected!(p)
         else
@@ -427,7 +404,6 @@ end
 
     # current number of people in different states in each time step
     num_susceptible::Vector{Int64} = Int64[]
-    num_exposed::Vector{Int64}     = Int64[]
     num_infected::Vector{Int64}    = Int64[]
     num_vaccinated::Vector{Int64}  = Int64[]
 
@@ -439,7 +415,6 @@ end
 MetricReport(n_steps) = MetricReport(
     times = zeros(Float64, n_steps),
     num_susceptible = zeros(Int64, n_steps),
-    num_exposed = zeros(Int64, n_steps),
     num_infected = zeros(Int64, n_steps),
     num_vax_infected = zeros(Int64, n_steps),
     num_unvax_infected = zeros(Int64, n_steps),
@@ -452,7 +427,6 @@ function generate_report(exp_idx, rep, report::MetricReport)
         rep = rep,
         t = report.times,
         s = report.num_susceptible,
-        e = report.num_exposed,
         i = report.num_infected,
         vax_inf = report.num_vax_infected,
         unvax_inf = report.num_unvax_infected,
@@ -490,8 +464,6 @@ function reporter!(report::MetricReport, par::Parameters, people::Vector{Person}
 
         if p.state == Susceptible
             report.num_susceptible[step] += 1
-        elseif p.state == Exposed
-            report.num_exposed[step] += 1
         elseif p.state == Infected
             report.num_infected[step] += 1
         end
