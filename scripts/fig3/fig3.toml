@@ -9,7 +9,7 @@ tmp_dir = "default"
 sim_dir = "default"
 
 save_linelist = false
-save_prevax_suscep = true
+save_current_suscep = true
 
 # number of simulation replicates
 nrep = 1
@@ -17,8 +17,8 @@ nrep = 1
 # simulation max time
 tmax = 6.0
 
-# simulation burn-in time
-tburn = 3.0
+# time when increased transmission occurs
+t_boost_transmission = 3.0
 
 # simulated time step size
 dt = 0.005
@@ -27,7 +27,7 @@ dt = 0.005
 pop_size = 5000000
 
 # number of people initially infected
-initial_infected = 5000
+initial_infected = 0
 
 # number of people initially recovered
 initial_recovered = 0
@@ -38,67 +38,54 @@ simulate_transmission = false
 # probability of externally seeded inf
 pr_seeded_inf = 0.0
 
-# average infection hazard
-# beta = 0.01
-# beta_burn = 219.0 # avg R0 = 3
-# beta_boosted = 292.0 # avg R0 = 3
-beta_burn = 1.0
+# average infection hazard for normal years
+beta = 1.0
+
+# boosted infection hazard for larger-than-normal epidemic
 beta_boosted = 5.0
 
 # seasonal forcing amplitude multiplier
 seasonality_amplifier = 1.0
 
-# seasonal forcing period
-# seasonal_period = 360.0
-
 # seasonal forcing shift
 seasonality_shift = 0.5
 
-# 1 / average latent period
-sigma = 182.5
-
-# 1 / average infection duration
-gamma = 73.0
-
-# 1 / average immunity duration
-# omega = 0.5
-omega = 3.65e7
+# parameters controlling transition rates between SEIR compartments
+# for simulations with an exogenous infection hazard and where susceptibility is
+# modeled using waning infection immunity, large values are used so that people
+# move back to the susceptibile compartment quickly
+sigma = 1e5 # 1 / average latent period
+gamma = 1e5 # 1 / average infection duration
+omega = 1e5 # 1 / average immunity duration
 
 # average baseline susceptibility
-vax_base_suscep_mean = 1.0
-unvax_base_suscep_mean = 1.0
+vax_mean_pre_vax_suscep = 1.0
+unvax_mean_pre_vax_suscep = 1.0
 
 # shape parameter for susceptibility gamma distribution
-# vax_base_suscep_shape = 200.0
-# unvax_base_suscep_shape = 200.0
-vax_base_suscep_shape = 2.0
-unvax_base_suscep_shape = 0.2
+vax_pre_vax_suscep_shape = 2.0
+unvax_pre_vax_suscep_shape = 0.2
 
 # allow for re-infections
 allow_reinf = true
 
 # infection-derived immunity waning half life
-# inf_imm_halflife = 0.0 # return to baseline immediately
-# inf_imm_halflife = 720.0 # 4 year half life
 inf_imm_halflife = 4.0
 
 # vaccination coverage
 vax_coverage = 0.5
 
 # vaccination auto-correlation (prob being re-vaccinated)
-# pr_vax_to_vax = 0.5 # random vaccination
 pr_vax_to_vax = 0.85
-# pr_vax_to_vax = 1.0 # perfect auto correlation
 
 # true vaccine efficacy
-vax_efficacy = 0.5 #[0.5, 0.925]
+vax_efficacy = 0.5
 
 # vaccine-derived immunity waning half life
-# vax_imm_halflife = 0.0 # no waning
-# vax_imm_halflife = 180.0 # 6 month half life
-vax_imm_halflife = 0.0 #[0.0, 0.5]
+vax_imm_halflife = 0.0 # 0 corresponds to no waning
 
 # checkpoints to vaccinate population
 vaccination_checkpoint = 1.0
 
+# time point when vaccination starts
 t_vax_start = 0.0
