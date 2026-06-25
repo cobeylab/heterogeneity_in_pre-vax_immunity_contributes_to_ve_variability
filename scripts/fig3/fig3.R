@@ -24,7 +24,8 @@ script_dir <- here("scripts", "fig3")
 config_path <- here(script_dir, parsed_args[["config"]])
 
 config <- parseTOML(config_path)
-exp_name <- config$parameters$exp_name
+pars <- config$parameters
+exp_name <- pars$exp_name
 
 dat_dir <- here("data", exp_name)
 exp_filepath <- here(dat_dir, "experiments.csv")
@@ -39,17 +40,19 @@ suscep <- read_csv(suscep_filepath, show_col_types = FALSE)
 
 print("CLEANING INFECTION DATA")
 
+per_10k <- 1e3 / pars$pop_size
+
 inf_dt <- results %>%
     filter(t > 0.005) %>%
     mutate(
-        step = t / config$parameters$dt,
-        year = ceiling(step * config$parameters$dt),
-        time = (step * config$parameters$dt) - (year - 1)
+        step = t / pars$dt,
+        year = ceiling(t),
+        time = t - (year - 1)
     ) %>%
     group_by(exp, t) %>%
     summarize(
-        v_inf = mean(vax_inf) / config$parameters$pop_size * 1e3,
-        u_inf = mean(unvax_inf) / config$parameters$pop_size * 1e3
+        v_inf = mean(vax_inf) * per_10k,
+        u_inf = mean(unvax_inf) * per_10k
     ) %>%
     ungroup() %>%
     mutate(
@@ -74,9 +77,9 @@ print("CLEANING VE DATA")
 
 ve_dt <- results %>%
     mutate(
-        step = t / config$parameters$dt,
-        year = ceiling(step * config$parameters$dt),
-        time = (step * config$parameters$dt) - (year - 1)
+        step = t / pars$dt,
+        year = ceiling(step * pars$dt),
+        time = (step * pars$dt) - (year - 1)
     ) %>%
     group_by(exp, rep, year) %>%
     mutate(
@@ -84,7 +87,7 @@ ve_dt <- results %>%
         cumul_unvax_inf = cumsum(unvax_inf)
     ) %>%
     ungroup() %>%
-    select(exp, rep, year, time, cumul_unvax_inf, cumul_vax_inf, us_avg, vs_avg) %>%
+    select(exp, rep, year, time, cumul_unvax_inf, cumul_vax_inf) %>%
     left_join(
         select(experiments, all_of(c("exp_idx", "pop_size", "vax_coverage"))),
         by = join_by(exp == exp_idx)
