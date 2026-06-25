@@ -30,11 +30,6 @@ end
     dt::F                           # simulation time step size
 
     pop_size::I                     # synthetic population size
-    initial_infected::I             # number of people initially infected
-    initial_recovered::I            # number of people initially recovered
-
-    simulate_transmission::B        # should between-person transmission be simulated
-    pr_seeded_inf::F                # probability of externally seeded infection
 
     beta::F                         # exogenous infection hazard
     beta_boosted::F                 # infection hazard during year of increased transmission
@@ -221,7 +216,8 @@ function init_pop(par::Parameters)
             foi = par.beta,
             sigma = par.sigma,
             gamma = par.gamma,
-            omega = par.omega
+            omega = par.omega,
+            state = Susceptible::DiseaseState
         )
 
         if vs == Vaccinated
@@ -230,20 +226,7 @@ function init_pop(par::Parameters)
             push!(people[i].vax_hist, vax)
         end
 
-        if i <= par.initial_infected
-            # if desired, assign some people to be initially infected
-            people[i].state = Exposed::DiseaseState
-            expose!(par, people[i], 0.0)
-        elseif (i > par.initial_infected) && (i <= (par.initial_infected + par.initial_recovered))
-            # if desired, assign some people to be initially infected + recovered
-            people[i].state = Recovered::DiseaseState
-            expose!(par, people[i], 0.0)
-            recover!(people[i], 0.0)
-        else
-            # otherwise, the individual starts susceptible
-            people[i].state = Susceptible::DiseaseState
-            susceptible!(people[i], 0.0)
-        end
+        susceptible!(people[i], 0.0)
     end
 
     return people
@@ -429,35 +412,12 @@ function update_foi(par::Parameters, people::Vector{Person}, time)
     # calculate seasonally forced infection hazard
     beta = calculate_beta(par, time)
 
-    # if transmission is simulated between people (rather than exogenous hazard),
-    # scale the infection hazard by the number of currently infectious people
-    if par.simulate_transmission
-        num_infected = 0
-        for p in people
-            if p.state == Infected::DiseaseState
-                num_infected += 1
-            end
-        end
-
-        beta *= (num_infected / par.pop_size)
-    end
-
     # assign current infection hazard to each person
     for p in people
         p.foi = beta
     end
 
     return beta
-end
-
-# Randomly infect susceptibile individuals with some small probability
-function seed_infections!(par::Parameters, people::Vector{Person}, time)
-    for p in people
-        if (p.state == Susceptible::DiseaseState) && (rand() < par.pr_seeded_inf)
-            p.state = Exposed::DiseaseState
-            expose!(par, p, time)
-        end
-    end
 end
 
 # Stores simulation data to save to disc
@@ -612,9 +572,6 @@ function simulate(par::Parameters, rep::Real)
                 save_current_suscep(par, people, tnow, rep, false)
             end
         end
-
-        # seed infections if desired
-        seed_infections!(par, people, tnow)
 
         # update individual force of infection
         update_foi(par, people, tnow)
