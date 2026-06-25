@@ -13,7 +13,7 @@ set.seed(0)
 if (interactive()) {
     parser <- OptionParser()
     parser <- add_option(parser, "--config", help = "path to config TOML file (rel path from this script)")
-    parsed_args <- parse_args(parser, args = c("--config=fig3.toml"))
+    parsed_args <- parse_args(parser, args = c("--config=fig3/fig3.toml"))
 } else {
     parser <- OptionParser()
     parser <- add_option(parser, "--config", help = "path to config TOML file (rel path from this script)")
@@ -26,7 +26,7 @@ if (is.null(parsed_args[["config"]])) {
 }
 
 # parse TOML parameter file
-script_dir <- here("scripts", "fig3")
+script_dir <- here("scripts")
 config_path <- here(script_dir, parsed_args[["config"]])
 
 config <- parseTOML(config_path)

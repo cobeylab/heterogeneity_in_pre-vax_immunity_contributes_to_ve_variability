@@ -50,6 +50,12 @@ Recreation of Fig. 1C from Lewnard et al. 2018, which shows that susceptible dep
 
 Command: `Rscript supplemental_figures/lewnard_et_al_2018_fig_1c_recreation.R`
 
+### `multiyear_logistic_regression_ve_estimates.R`
+
+Calculates test-negative control infections and estimates annual VE using unconditional and conditional logistic regression for the multiyear simulation.
+
+Command: `Rscript supplemental_figures/multiyear_logistic_regression_ve_estimates.R --config fig3/fig3.toml`
+
 ### `proper_ve_reference_with_waning_vax_protection.R`
 
 Figures showing how VE can be compared to average true vaccine protection when vaccine protection wanes.
