@@ -109,7 +109,7 @@ fig_path <- here("plots", "supplemental_figs")
 dir.create(fig_path)
 
 ggsave(
-  here(fig_path, "final_ve_vs_mean_pre-vax_het.png"),
+  here(fig_path, "final_ve_vs_pre-vax_het.png"),
   heatmap_plot,
   bg = "white",
   height = 15,
@@ -118,7 +118,7 @@ ggsave(
 )
 
 ggsave(
-  here(fig_path, "final_ve_vs_mean_pre-vax_het.pdf"),
+  here(fig_path, "final_ve_vs_pre-vax_het.pdf"),
   heatmap_plot,
   bg = "white",
   height = 15,
