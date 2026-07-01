@@ -116,15 +116,25 @@ cumulative_attack_rate <- function(time, p, o, vaccinated = FALSE) {
 # o --> list of options (see above)
 # vaccinated --> arg controlling if calculating for vaccinated (TRUE) or unvaccinated (FALSE) population
 instantaneous_incidence_rate <- function(time, p, o, vaccinated = FALSE) {
-    stopifnot(time >= 0, p$epsilon_v > 0, p$epsilon_u > 0, p$lambda > 0)
+    stopifnot(time >= 0, p$epsilon_v > 0, p$epsilon_u > 0, p$alpha_v > 0,
+              p$alpha_u > 0, p$lambda > 0)
 
-    frac_suscep <- susceptible_fraction(time, p, o, vaccinated)
-    
     if (vaccinated) {
+        Theta <- total_vaccine_effect(time, p, o)
         theta <- vaccine_direct_effect(time, p, o)
-        return(p$lambda * theta * p$epsilon_v * frac_suscep)
+        if (o$heterogeneity) {
+            base <- p$alpha_v / (p$alpha_v + (p$epsilon_v * p$lambda * Theta))
+            return(p$lambda * p$epsilon_v * theta * (base ^ (p$alpha_v + 1)))
+        } else {
+            return(p$lambda * p$epsilon_v * theta * exp(-p$epsilon_v * p$lambda * Theta))
+        }
     } else {
-        return(p$lambda * p$epsilon_u * frac_suscep)
+        if (o$heterogeneity) {
+            base <- p$alpha_u / (p$alpha_u + (p$epsilon_u * p$lambda * time))
+            return(p$lambda * p$epsilon_u * (base ^ (p$alpha_u + 1)))
+        } else {
+            return(p$lambda * p$epsilon_u * exp(-p$epsilon_u * p$lambda * time))
+        }
     }
 }
 
