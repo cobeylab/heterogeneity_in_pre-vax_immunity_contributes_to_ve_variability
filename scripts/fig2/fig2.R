@@ -11,7 +11,7 @@ draw_gamma <- function(shape, mean, label) {
   return(ggplot2::geom_function(
         fun = dgamma,
         args = list(shape = shape, rate = shape / mean),
-        xlim = c(0, 2),
+        xlim = c(0, 3),
         ggplot2::aes(color = factor(shape), linetype = label),
         linewidth = 1,
         n = 500
@@ -103,6 +103,13 @@ lt <- c("Unvaccinated" = "solid", "Vaccinated" = "dashed",
 # Maintain consistent line colors
 cl <- c("0.2" = "#d95f02", "2" = "#1b9e77", "20" = "#7570b3")
 
+# Heterogeneity legend labels
+labs <- c(
+    "0.2" = expression(paste("High (", alpha, " = 0.2)")),
+    "2" = expression(paste("Moderate (", alpha, " = 2)")),
+    "20" = expression(paste("Low (", alpha, " = 20)"))
+)
+
 ### TOP ROW: vaccinated and unvaccinated populations have indentical distributions
 # Panel A: distributions with differnet shape parameters
 het_plot_a <- ggplot() +
@@ -118,13 +125,17 @@ het_plot_a <- ggplot() +
     draw_gamma(shape = 2, mean = 1, label = "Vaccinated") +
     draw_gamma(shape = 20, mean = 1, label = "Unvaccinated") +
     draw_gamma(shape = 20, mean = 1, label = "Vaccinated") +
-    scale_color_manual(name = "Shape parameter", values = cl) +
-    scale_linetype_manual(name = element_blank(), values = lt) +
+    scale_color_manual(
+        name = "\nHeterogeneity",
+        values = cl,
+        labels = labs
+    ) +
+    scale_linetype_manual(name = NULL, values = lt) +
     ylim(0, 2) +
     theme_cowplot(14) +
     theme(
         legend.position = "inside",
-        legend.position.inside = c(0.625, 0.675),
+        legend.position.inside = c(0.5, 0.675),
         legend.key.width = unit(35, "pt"),
         legend.spacing.y = unit(1, "pt")
     ) +
@@ -189,10 +200,10 @@ het_plot_d <- ggplot() +
     ) +
     draw_gamma(shape = 0.2, mean = 1, label = "Unvaccinated") +
     draw_gamma(shape = 2, mean = 1, label = "Unvaccinated") +
-    draw_gamma(shape = 20, mean = 1, label = "Unvaccinated") +
+    # draw_gamma(shape = 20, mean = 1, label = "Unvaccinated") +
     geom_function(
         fun = dgamma,
-        args = list(shape = 2, rate = 2 / 1),
+        args = list(shape = 20, rate = 20 / 1),
         xlim = c(0, 2),
         aes(linetype = "Vaccinated"),
         linewidth = 1,
@@ -208,7 +219,7 @@ het_plot_d <- ggplot() +
 
 # Panel E: cumulative attack rates with constant unvaccinated distribution
 het_plot_e <- cAR_dt %>%
-    filter(alpha_v == 2) %>%
+    filter(alpha_v == 20, alpha_u != 20) %>%
     ggplot() +
         aes(x = time, group = interaction(alpha_u, alpha_v)) +
         geom_line(
@@ -232,7 +243,7 @@ het_plot_e <- cAR_dt %>%
 
 # Panel F: final VE vs. true vaccine protection with constant unvaccinated distribution
 het_plot_f <- final_ve_dt %>%
-    filter(alpha_v == 2) %>%
+    filter(alpha_v == 20, alpha_u != 20) %>%
     ggplot() +
         aes(
             x = true_vax_prot,
@@ -266,7 +277,7 @@ het_plot_g <- ggplot() +
     ) +
     geom_function(
         fun = dgamma,
-        args = list(shape = 2, rate = 2 / 1),
+        args = list(shape = 20, rate = 20 / 1),
         xlim = c(0, 2),
         aes(linetype = "Unvaccinated"),
         linewidth = 1,
@@ -275,7 +286,7 @@ het_plot_g <- ggplot() +
     ) +
     draw_gamma(shape = 0.2, mean = 1, label = "Vaccinated") +
     draw_gamma(shape = 2, mean = 1, label = "Vaccinated") +
-    draw_gamma(shape = 20, mean = 1, label = "Vaccinated") +
+    # draw_gamma(shape = 20, mean = 1, label = "Vaccinated") +
     scale_color_manual(values = cl) +
     scale_linetype_manual(values = lt) +
     ylim(0, 2) +
@@ -285,7 +296,7 @@ het_plot_g <- ggplot() +
 
 # Panel H: cumulative attack rates with constant vaccinated distribution
 het_plot_h <- cAR_dt %>%
-    filter(alpha_u == 2) %>%
+    filter(alpha_u == 20, alpha_v != 20) %>%
     ggplot() +
         aes(x = time, group = interaction(alpha_u, alpha_v)) +
         geom_line(
@@ -309,7 +320,7 @@ het_plot_h <- cAR_dt %>%
 
 # Panel I: final VE vs. true vaccine protection with constant vaccinated distribution
 het_plot_i <- final_ve_dt %>%
-    filter(alpha_u == 2) %>%
+    filter(alpha_u == 20, alpha_v != 20) %>%
     ggplot() +
         aes(
             x = true_vax_prot,
