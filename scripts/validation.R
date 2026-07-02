@@ -46,9 +46,9 @@ insnt_ve_opts$instantaneous <- TRUE
 
 # Parameters to estimate final VE 
 pars = list(
-    start_time = 200,
+    start_time = 0,
     end_time = 200,
-    dt = 0,
+    dt = 10,
     lambda = c(0.001, 0.005, 0.01),
     theta_0 = 1 - seq(0.1, 0.9, 0.1),
     epsilon_v = seq(0.1, 1.0, 0.1),
