@@ -63,9 +63,17 @@ final_ve_dt <- pars_dt %>%
     unnest(pars) %>%
     select(theta_0, starts_with("alpha_"), ends_with("_ve")) %>%
     pivot_longer(ends_with("_ve"), names_to = "method", values_to = "estd_ve") %>%
-    mutate(true_vax_protect = (1 - theta_0) * 100)
+    mutate(
+        true_vax_protect = (1 - theta_0) * 100,
+        method_f = factor(
+            method,
+            levels = c("cumul_ve", "ulreg_ve", "clreg_ve", "insnt_ve"),
+            labels = c("VE cumulative", "VE unconditional", "VE conditional", "VE instantaneous")
+        )
+    )
 
 ve_comp <- final_ve_dt %>%
+    select(!method_f) %>%
     pivot_wider(names_from = method, values_from = estd_ve) %>%
     select(ends_with("_ve")) %>%
     pivot_longer(!cumul_ve) %>%
@@ -112,11 +120,7 @@ top <- final_ve_dt %>%
             values = cl,
             labels = labs
         ) +
-        facet_grid(cols = vars(factor(
-            method,
-            levels = c("insnt_ve", "cumul_ve", "ulreg_ve", "clreg_ve"),
-            labels = c("VE instantaneous", "VE cumulative", "VE unconditional", "VE conditional")
-        ))) +
+        facet_grid(cols = vars(method_f)) +
         theme_cowplot() +
         background_grid() +
         theme(
@@ -144,11 +148,7 @@ mid <- final_ve_dt %>%
             values = cl,
             labels = labs
         ) +
-        facet_grid(cols = vars(factor(
-            method,
-            levels = c("insnt_ve", "cumul_ve", "ulreg_ve", "clreg_ve"),
-            labels = c("VE instantaneous", "VE cumulative", "VE unconditional", "VE conditional")
-        ))) +
+        facet_grid(cols = vars(method_f)) +
         theme_cowplot() +
         background_grid() +
         theme(legend.position = "none") +
@@ -171,11 +171,7 @@ bot <- final_ve_dt %>%
             values = cl,
             labels = labs
         ) +
-        facet_grid(cols = vars(factor(
-            method,
-            levels = c("insnt_ve", "cumul_ve", "ulreg_ve", "clreg_ve"),
-            labels = c("VE instantaneous", "VE cumulative", "VE unconditional", "VE conditional")
-        ))) +
+        facet_grid(cols = vars(method_f)) +
         theme_cowplot() +
         background_grid() +
         theme(legend.position = "none") +
