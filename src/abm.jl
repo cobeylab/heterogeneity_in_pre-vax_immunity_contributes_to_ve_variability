@@ -294,14 +294,19 @@ function update_susceptible!(par::Parameters, p::Person, step_tmax::Real)
 end
 
 # Determine when an individual transitions from infected to recovered
-function update_infected!(p::Person)
+function update_infected!(par::Parameters, p::Person)
     # update individual's time, state
     p.tnow = p.tnext
     p.state = p.nextstate
 
-    # sample when the person recovers (transitions from infected to susceptible)
-    t_rec = p.tnow + sample_exponential(1 / p.gamma)
-    recover!(p, t_rec)
+    if par.allow_reinf
+        # sample when the person recovers (transitions from infected to susceptible)
+        t_rec = p.tnow + sample_exponential(1 / p.gamma)
+        recover!(p, t_rec)
+    else
+        p.tnext = Inf
+        p.nextstate = Infected::DiseaseState
+    end
 end
 
 # Simulate potential events for each person based on their current state until the end
@@ -311,7 +316,7 @@ function sim_person!(par::Parameters, p::Person, step_tmax::Real)
         if p.nextstate == Susceptible::DiseaseState
             update_susceptible!(par, p, step_tmax)
         else
-            update_infected!(p)
+            update_infected!(par, p)
         end
     end
 end
