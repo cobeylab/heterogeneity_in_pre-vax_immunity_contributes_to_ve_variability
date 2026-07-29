@@ -110,6 +110,30 @@ cumulative_attack_rate <- function(time, p, o, vaccinated = FALSE) {
     return(1 - susceptible_fraction(time, p, o, vaccinated))
 }
 
+# calculates the average instantaneous incidence rate at a given time (defined as
+# the cumulative attack rate divided by the expected person-years-at-risk)
+# time --> numeric arg
+# p --> list of parameters (see above)
+# o --> list of options (see above)
+# vaccinated --> arg controlling if calculating for vaccinated (TRUE) or unvaccinated (FALSE) population
+average_instantaneous_incidence_rate <- function(time, p, o, vaccinated = FALSE) {
+    car <- cumulative_attack_rate(time, p, o, vaccinated)
+
+    # expected person-years-at-risk is found by integrating the probability of
+    # being susceptible from 0 to the current time
+    expected_pyar <- integrate(
+        f = susceptible_fraction,
+        lower = 0,
+        upper = time,
+        p = p,
+        o = o,
+        vaccinated = vaccinated
+    )$value
+
+    return(car / expected_pyar)
+}
+
+
 # calculates instantaneous incidence rate at a given time
 # time --> numeric arg
 # p --> list of parameters (see above)
