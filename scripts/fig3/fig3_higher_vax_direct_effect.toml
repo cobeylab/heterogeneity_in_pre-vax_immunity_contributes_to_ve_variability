@@ -1,6 +1,6 @@
 [parameters]
 # experiment name
-exp_name = "fig3"
+exp_name = "fig3_higher_vax_direct_effects"
 
 # tmp directory path
 tmp_dir = "default"
@@ -64,7 +64,7 @@ vax_coverage = 0.5
 pr_vax_to_vax = 0.85
 
 # true vaccine efficacy
-vax_efficacy = 0.6
+vax_efficacy = 0.9
 
 # vaccine-derived immunity waning half life in years
 vax_imm_halflife = 0.0 # 0 corresponds to no waning
