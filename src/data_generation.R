@@ -91,3 +91,10 @@ estimate_math_ve <- function(pars, opts) {
 estimate_ve_starting <- function(x) {
     return(1 - (x$theta_0 * (x$epsilon_v / x$epsilon_u)))
 }
+
+# Estimate VE using analytical cohort-like VE model.
+estimate_ve_cohort <- function(pars, opts) {
+    v <- average_instantaneous_incidence_rate(pars$time, pars, opts, vaccinated = TRUE)
+    u <- average_instantaneous_incidence_rate(pars$time, pars, opts, vaccinated = FALSE)
+    return((1 - (v / u)) * 100)
+}
