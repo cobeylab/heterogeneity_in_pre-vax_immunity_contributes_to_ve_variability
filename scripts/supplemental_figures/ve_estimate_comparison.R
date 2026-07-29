@@ -68,6 +68,7 @@ final_ve_dt <- pars_dt %>%
     mutate(
         insnt_ve = map_vec(pars, function(x) estimate_math_ve(x, insnt_ve_opts)),
         cumul_ve = map_vec(pars, function(x) estimate_math_ve(x, cumul_ve_opts)),
+        cohrt_ve = map_vec(pars, function(x) estimate_ve_cohort(x, cumul_ve_opts)),
         ulreg_ve = map_vec(linelist, function(x) estimate_ve_uncond_logreg(x)),
         clreg_ve = map_vec(linelist, function(x) estimate_ve_cond_logreg(x))
     )
@@ -147,6 +148,7 @@ final_ve_dt <- pars_dt %>%
     mutate(
         insnt_ve = map_vec(pars, function(x) estimate_math_ve(x, insnt_ve_opts)),
         cumul_ve = map_vec(pars, function(x) estimate_math_ve(x, cumul_ve_opts)),
+        cohrt_ve = map_vec(pars, function(x) estimate_ve_cohort(x, cumul_ve_opts)),
         ulreg_ve = map_vec(linelist, function(x) estimate_ve_uncond_logreg(x)),
         clreg_ve = map_vec(linelist, function(x) estimate_ve_cond_logreg(x))
     ) %>%
