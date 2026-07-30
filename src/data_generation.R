@@ -150,14 +150,11 @@ estimate_ve_cohort_sim <- function(x, year, tot_pop_size, vax_coverage) {
         ungroup() %>%
         # calculate sampled population size by vaccination status
         # calculate total pyar by subtracting total pyar avoided from (1 year * pop size)
-        # calculate cumulative attack rates and expected pyar
         # calculate average instantaneous incidence rates
         mutate(
             sample_pop_size = calculate_pop_size(tot_pop_size, vax_coverage, vax),
             tot_pyar = sample_pop_size - tot_pyar_avoided,
-            cAR = tot_infs / sample_pop_size,
-            exp_pyar = tot_pyar / sample_pop_size,
-            avg_insnt_inc_rate = cAR / exp_pyar
+            avg_insnt_inc_rate = tot_infs / tot_pyar
         ) %>%
         # calculate ve from ratio of avg instantaneous incidence rates
         select(vax, avg_insnt_inc_rate) %>%
