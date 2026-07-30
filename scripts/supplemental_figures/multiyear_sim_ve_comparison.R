@@ -199,32 +199,6 @@ suscep_dt <- suscep %>%
 
 print("CLEANING VE DATA")
 
-# DELME
-# # ve is calculated from time-varying cumulative attack rates each year
-# ve_dt <- results %>%
-#     mutate(
-#         step = t / pars$dt,
-#         year = ceiling(t),
-#         time = t - (year - 1)
-#     ) %>%
-#     group_by(exp, rep, year) %>%
-#     mutate(
-#         cumul_vax_inf = cumsum(vax_inf),
-#         cumul_unvax_inf = cumsum(unvax_inf)
-#     ) %>%
-#     ungroup() %>%
-#     select(exp, rep, year, time, cumul_unvax_inf, cumul_vax_inf) %>%
-#     left_join(
-#         select(experiments, all_of(c("exp_idx", "pop_size", "vax_coverage"))),
-#         by = join_by(exp == exp_idx)
-#     ) %>%
-#     mutate(
-#         cumul_vax_inf = cumul_vax_inf / (vax_coverage * pop_size),
-#         cumul_unvax_inf = cumul_unvax_inf / ((1 - vax_coverage) * pop_size),
-#         estd_ve = (1 - (cumul_vax_inf / cumul_unvax_inf)) * 100
-#     )
-# DELME
-
 # data used to draw background figure stipes for each simulated year
 rect_df <- inf_dt %>%
     distinct(year) %>%
@@ -360,12 +334,6 @@ ve_dt <- final_ve_dt %>%
     pivot_longer(!year)
 
 final_ve_plt <- ggplot(ve_dt) +
-    # geom_rect(
-    #     data = rect_df,
-    #     aes(xmin = xmin - 0.5, xmax = xmax - 0.5, ymin = -Inf, ymax = Inf, fill = fill),
-    #     alpha = 0.3,
-    #     inherit.aes = FALSE
-    # ) +
     aes(
         x = year,
         y = value,
@@ -373,15 +341,7 @@ final_ve_plt <- ggplot(ve_dt) +
     ) +
     true_vax_protect_line(0, tmax + 0.5, true_vax_protection) +
     geom_hline(yintercept = 0, color = "gray25", linewidth = 0.5) +
-    # geom_line(color = "gray50", linewidth = 1) +
-    # geom_point(
-    #     data = ve_dt %>% filter(time == 1.0),
-    #     aes(color = "ve_cAR"),
-    #     size = 2
-    # ) +
     geom_point(
-        # data = final_ve_dt,
-        # aes(x = year, y = value, color = name),
         size = 2,
         position = position_dodge(width = 0.5)
     ) +
@@ -473,7 +433,7 @@ fig_path <- here("plots", "supplemental_figs")
 dir.create(fig_path)
 
 ggsave(
-  here(fig_path, "simulation_with_regression_ve_estimates.png"),
+  here(fig_path, "multiyear_simulation_ve_comparison.png"),
   plt,
   width = 6,
   height = 9,
@@ -482,7 +442,7 @@ ggsave(
 )
 
 ggsave(
-  here(fig_path, "simulation_with_regression_ve_estimates.pdf"),
+  here(fig_path, "multiyear_simulation_ve_comparison.pdf"),
   plt,
   width = 6,
   height = 9,
