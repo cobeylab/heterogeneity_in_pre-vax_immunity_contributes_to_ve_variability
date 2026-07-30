@@ -184,7 +184,7 @@ inf_plt <- ggplot(inf_dt) +
         color = name
     ) + 
     geom_line(linewidth = 1) +
-    coord_cartesian(xlim = c(0, tmax + 0.1), ylim = c(0, 4),  expand = FALSE) +
+    coord_cartesian(xlim = c(0, tmax + 0.1), ylim = c(0, 4), expand = FALSE) +
     scale_x_continuous(breaks = seq(0, tmax, 1), labels = seq(0, tmax, 1)) +
     scale_fill_manual(values = c("gray90", "gray60"), guide = "none") +
     scale_color_manual(
@@ -234,7 +234,7 @@ final_ve_plt <- ggplot(ve_dt) +
         data = ve_dt %>% filter(time == 1.0),
         size = 2
     ) +
-    coord_cartesian(xlim = c(0, tmax + 0.1), ylim = c(-5, true_vax_protection + 10),  expand = FALSE) +
+    coord_cartesian(xlim = c(0, tmax + 0.1), ylim = c(-5, true_vax_protection + 10), expand = FALSE) +
     scale_x_continuous(breaks = seq(0, tmax, 1), labels = seq(0, tmax, 1)) +
     scale_y_continuous(breaks = seq(-20, true_vax_protection, 10), labels = seq(-20, true_vax_protection, 10)) +
     scale_fill_manual(values = c("gray90", "gray60"), guide = "none") +
