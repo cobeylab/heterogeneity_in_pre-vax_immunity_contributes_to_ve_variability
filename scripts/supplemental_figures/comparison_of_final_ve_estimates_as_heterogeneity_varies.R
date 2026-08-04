@@ -127,7 +127,7 @@ top <- final_ve_dt %>%
         theme(
             legend.position = "inside",
             legend.position.inside = c(0.01, 0.75),
-            legend.key.width = unit(35, "pt"),
+            # legend.key.width = unit(35, "pt"),
             legend.spacing.y = unit(1, "pt")
         ) +
         labs(x = "True vaccine protection (%)", y = "Final VE (%)")

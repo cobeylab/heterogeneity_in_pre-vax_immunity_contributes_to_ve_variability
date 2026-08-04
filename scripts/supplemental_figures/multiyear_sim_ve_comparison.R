@@ -334,6 +334,12 @@ ve_dt <- final_ve_dt %>%
     pivot_longer(!year)
 
 final_ve_plt <- ggplot(ve_dt) +
+geom_rect(
+        data = rect_df,
+        aes(xmin = xmin, xmax = xmax, ymin = -Inf, ymax = Inf, fill = fill),
+        alpha = 0.3,
+        inherit.aes = FALSE
+    ) +
     aes(
         x = year,
         y = value,
