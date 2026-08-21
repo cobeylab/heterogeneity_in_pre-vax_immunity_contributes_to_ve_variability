@@ -20,6 +20,12 @@ Note: The single simulation uses one core and about 4.5GB of memory. The simulat
 
 ## Supplemental figures
 
+### `comparison_of_final_ve_estimates_as_heterogeneity_varies.R`
+
+Compares regression-based, instantaneous, and cohort VE estimates to VE from cumulative attack rates while varying the heterogeneity of vaccinated and unvaccinated pre-vaccination susceptibility. Re-creates right-hand column of Figure 2 for the difference VE estimates.
+
+Command: `Rscript supplemental_figures/comparison_of_final_ve_estimates_as_heterogeneity_varies.R`
+
 ### `final_ve_compared_to_average_vax_protection.R`
 
 Relates the distance between final VE and average true vaccine protection to whether average protection falls close to the level when maximal effects from susceptible depletion are expected in a no-waning scenario.
@@ -50,11 +56,11 @@ Recreation of Fig. 1C from Lewnard et al. 2018, which shows that susceptible dep
 
 Command: `Rscript supplemental_figures/lewnard_et_al_2018_fig_1c_recreation.R`
 
-### `multiyear_logistic_regression_ve_estimates.R`
+### `multiyear_sim_ve_comparison.R`
 
-Calculates test-negative control infections and estimates annual VE using unconditional and conditional logistic regression for the multiyear simulation.
+Calculates test-negative control infections and compares final annual VE across the different estimation methods considered (cumulative, instantaneous, regression-based, and cohort). Re-creates version of Figure 3 to compare VE estimates.
 
-Command: `Rscript supplemental_figures/multiyear_logistic_regression_ve_estimates.R --config fig3/fig3.toml`
+Command: `Rscript supplemental_figures/multiyear_sim_ve_comparison.R --config fig3/fig3.toml`
 
 ### `proper_ve_reference_with_waning_vax_protection.R`
 
@@ -68,11 +74,11 @@ Same figure as main text figure 1, but for different levels of true vaccine prot
 
 Command: `Rscript supplemental_figures/starting_ve_sensitivity_to_pre-vax_means.R`
 
-### `ve_model_comparison.R`
+### `ve_estimate_comparison.R`
 
-Generates scatterplots showing how similar regression-based and instantaneous-incidence-based VE estimates are to our analytical VE estimate using cumulative attack rates. Sweeps across values of mean pre-vaccination risk, pre-vaccination risk heterogeneity, exogeneous infeciton hazard, true vaccine protection, and vaccine protection waning rate.
+Compares VE estimates across scenarios with varying pre-vaccination susceptibility means, vaccine protection waning rate, and true vaccine protection.
 
-Command: `Rscript supplemental_figures/ve_model_comparison.R`
+Command: `Rscript supplemental_figures/ve_estimate_comparison.R`
 
 ### `ve_with_waning_vax_protection_sensitivity_to_pre-vax_means.R`
 

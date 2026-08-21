@@ -91,3 +91,74 @@ estimate_math_ve <- function(pars, opts) {
 estimate_ve_starting <- function(x) {
     return(1 - (x$theta_0 * (x$epsilon_v / x$epsilon_u)))
 }
+
+# Estimate VE using analytical cohort-like VE model.
+estimate_ve_cohort <- function(pars, opts) {
+    v <- average_instantaneous_incidence_rate(pars$time, pars, opts, vaccinated = TRUE)
+    u <- average_instantaneous_incidence_rate(pars$time, pars, opts, vaccinated = FALSE)
+    return((1 - (v / u)) * 100)
+}
+
+# Helper function to calculate vaccinated and unvaccinated population size
+calculate_pop_size <- function(tot_pop_size, vax_coverage, vax_status) {
+    prob_vaccinated <- ifelse(vax_status == 1, vax_coverage, 1 - vax_coverage)
+    return(tot_pop_size * prob_vaccinated)
+}
+
+# Estimate VE using cumulative attack rates from linelist data
+estimate_ve_cumul_attack_rates_sim <- function(x, tot_pop_size, vax_coverage) {
+    x %>%
+        # only need test-positive infections
+        filter(inf == 1) %>%
+        # count total infections by vaccination status
+        group_by(vax) %>%
+        summarize(tot_infs = n()) %>%
+        ungroup() %>%
+        # calculate cumulative attack rates
+        mutate(
+            cAR = tot_infs / calculate_pop_size(tot_pop_size, vax_coverage, vax)
+        ) %>%
+        # calculate ve from risk ratio using cumulative attack rates
+        select(-tot_infs) %>%
+        pivot_wider(
+            names_from = vax,
+            values_from = cAR,
+            names_glue = "{vax}_{.value}"
+        ) %>%
+        summarize((1 - (`1_cAR` / `0_cAR`)) * 100) %>%
+        as.numeric()
+}
+
+# Estimate VE using average instantaneous incidence rates (i.e., cohort-based estimate)
+# from linelist data
+estimate_ve_cohort_sim <- function(x, year, tot_pop_size, vax_coverage) {
+    x %>%
+        # only need test-positive infections
+        filter(inf == 1) %>%
+        # calculate time-to-infection (pyar) and the remainder of the year after
+        # censoring at infection (pyar_avoided)
+        mutate(
+            pyar = t - (year - 1),
+            pyar_avoided = 1 - pyar
+        ) %>%
+        # count total infections and pyar avoided by vaccination status
+        group_by(vax) %>%
+        summarize(
+            tot_infs = n(),
+            tot_pyar_avoided = tot_pop_size - sum(pyar_avoided)
+        ) %>%
+        ungroup() %>%
+        # calculate sampled population size by vaccination status
+        # calculate total pyar by subtracting total pyar avoided from (1 year * pop size)
+        # calculate average instantaneous incidence rates
+        mutate(
+            sample_pop_size = calculate_pop_size(tot_pop_size, vax_coverage, vax),
+            tot_pyar = sample_pop_size - tot_pyar_avoided,
+            avg_insnt_inc_rate = tot_infs / tot_pyar
+        ) %>%
+        # calculate ve from ratio of avg instantaneous incidence rates
+        select(vax, avg_insnt_inc_rate) %>%
+        pivot_wider(names_from = vax, names_glue = "{vax}_{.value}", values_from = avg_insnt_inc_rate) %>%
+        summarize((1 - (`1_avg_insnt_inc_rate` / `0_avg_insnt_inc_rate`)) * 100) %>%
+        as.numeric()
+}

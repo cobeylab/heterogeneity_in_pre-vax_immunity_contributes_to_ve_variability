@@ -7,18 +7,18 @@ library(paletteer)
 source(here("src", "full_VE_model.R"))
 source(here("src", "data_generation.R"))
 
-vax_term <- function(p) {
-    p$alpha_v / (p$alpha_v + (p$epsilon_v * p$theta_0 * p$lambda * p$time))
+vax_term <- function(t, p) {
+    p$alpha_v / (p$alpha_v + (p$epsilon_v * p$theta_0 * p$lambda * t))
 }
 
-unvax_term <- function(p) {
-    p$alpha_u / (p$alpha_u + (p$epsilon_u * p$lambda * p$time))
+unvax_term <- function(t, p) {
+    p$alpha_u / (p$alpha_u + (p$epsilon_u * p$lambda * t))
 }
 
 # main text equation 1a
 ve_instantaneous <- function(p) {
-    numer <- vax_term(p)^(p$alpha_v + 1)
-    denom <- unvax_term(p)^(p$alpha_u + 1)
+    numer <- vax_term(p$time, p)^(p$alpha_v + 1)
+    denom <- unvax_term(p$time, p)^(p$alpha_u + 1)
 
     ret <- p$theta_0 * (p$epsilon_v / p$epsilon_u) * (numer / denom)
     return((1 - ret) * 100)
@@ -26,8 +26,40 @@ ve_instantaneous <- function(p) {
 
 # main text equation 1b
 ve_cumulative <- function(p) {
-    numer <- 1 - (vax_term(p)^(p$alpha_v))
-    denom <- 1 - (unvax_term(p)^(p$alpha_u))
+    numer <- 1 - (vax_term(p$time, p)^(p$alpha_v))
+    denom <- 1 - (unvax_term(p$time, p)^(p$alpha_u))
+
+    return((1 - (numer / denom)) * 100)
+}
+
+ve_cohort <- function(p) {
+    suscep_v <- function(t, p) {
+        return(vax_term(t, p)^(p$alpha_v))
+    }
+
+    suscep_u <- function(t, p) {
+        return(unvax_term(t, p)^(p$alpha_u))
+    }
+
+    car_v <- 1 - suscep_v(p$time, p)
+    car_u <- 1 - suscep_u(p$time, p)
+
+    e_pyar_v <- integrate(
+        f = suscep_v,
+        lower = 0,
+        upper = p$time,
+        p = p
+    )$value
+
+    e_pyar_u <- integrate(
+        f = suscep_u,
+        lower = 0,
+        upper = p$time,
+        p = p
+    )$value
+
+    numer <- car_v / e_pyar_v
+    denom <- car_u / e_pyar_u
 
     return((1 - (numer / denom)) * 100)
 }
@@ -65,7 +97,7 @@ cumul_ve_comp <- generate_par_sets(pars) %>%
     mutate(
         cumul_ve1 = map_vec(pars, function(x) estimate_math_ve(x, cumul_ve_opts)),
         cumul_ve2 = map_vec(pars, function(x) ve_cumulative(x)),
-        ve_diff = cumul_ve1 - cumul_ve2
+        ve_diff = abs(cumul_ve1 - cumul_ve2)
     ) %>%
     arrange(desc(ve_diff))
 
@@ -77,7 +109,19 @@ insnt_ve_comp <- generate_par_sets(pars) %>%
     mutate(
         insnt_ve1 = map_vec(pars, function(x) estimate_math_ve(x, insnt_ve_opts)),
         insnt_ve2 = map_vec(pars, function(x) ve_instantaneous(x)),
-        ve_diff = insnt_ve1 - insnt_ve2
+        ve_diff = abs(insnt_ve1 - insnt_ve2)
+    ) %>%
+    arrange(desc(ve_diff))
+
+cohrt_ve_comp <- generate_par_sets(pars) %>%
+    mutate(par_set_id = row_number()) %>%
+    group_by(par_set_id) %>%
+    nest(pars = -group_cols()) %>%
+    ungroup() %>%
+    mutate(
+        cohrt_ve1 = map_vec(pars, function(x) estimate_ve_cohort(x, cumul_ve_opts)),
+        cohrt_ve2 = map_vec(pars, function(x) ve_cohort(x)),
+        ve_diff = abs(cohrt_ve1 - cohrt_ve2)
     ) %>%
     arrange(desc(ve_diff))
 
@@ -90,7 +134,12 @@ n_large_insnt_ve_diffs <- insnt_ve_comp %>%
     filter(ve_diff > threshold) %>%
     nrow()
 
+n_large_cohrt_ve_diffs <- cohrt_ve_comp %>%
+    filter(ve_diff > threshold) %>%
+    nrow()
+
 print("Difference between VE from code implementation and main text equations")
 print(paste0("(number of times the difference > ", threshold, ")"))
 print(paste0("VE^instantaneous: ", n_large_insnt_ve_diffs))
 print(paste0("VE^cumulative: ", n_large_cumul_ve_diffs))
+print(paste0("VE^cohort: ", n_large_cohrt_ve_diffs))

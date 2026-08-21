@@ -169,6 +169,8 @@ geom_split_violin <- function(mapping = NULL, data = NULL, stat = "ydensity", po
 
 print("PLOTTING INFECTION DATA")
 
+tmax <- as.numeric(pars$tmax)
+
 inf_plt <- ggplot(inf_dt) +
     geom_rect(
         data = rect_df,
@@ -182,8 +184,8 @@ inf_plt <- ggplot(inf_dt) +
         color = name
     ) + 
     geom_line(linewidth = 1) +
-    coord_cartesian(xlim = c(0, 6.1), ylim = c(0, 3.5),  expand = FALSE) +
-    scale_x_continuous(breaks = seq(0, 6, 1), labels = seq(0, 6, 1)) +
+    coord_cartesian(xlim = c(0, tmax + 0.1), ylim = c(0, 4), expand = FALSE) +
+    scale_x_continuous(breaks = seq(0, tmax, 1), labels = seq(0, tmax, 1)) +
     scale_fill_manual(values = c("gray90", "gray60"), guide = "none") +
     scale_color_manual(
         name = NULL,
@@ -208,6 +210,8 @@ inf_plt <- ggplot(inf_dt) +
 
 print("PLOTTING VE DATA")
 
+true_vax_protection <- as.numeric(pars$vax_efficacy) * 100
+
 # remove early noisy ve trajectory
 ve_dt <- ve_dt %>%
   mutate(estd_ve = ifelse(time < 0.1, NA, estd_ve))
@@ -223,16 +227,16 @@ final_ve_plt <- ggplot(ve_dt) +
         x = time + (year - 1),
         y = estd_ve
     ) +
-    true_vax_protect_line(0, 6, 50) +
+    true_vax_protect_line(0, tmax + 0.1, true_vax_protection) +
     geom_hline(yintercept = 0, color = "gray25", linewidth = 0.5) +
     geom_line(color = "gray50", linewidth = 1) +
     geom_point(
         data = ve_dt %>% filter(time == 1.0),
         size = 2
     ) +
-    coord_cartesian(xlim = c(0, 6.1), ylim = c(-15, 60),  expand = FALSE) +
-    scale_x_continuous(breaks = seq(0, 6, 1), labels = seq(0, 6, 1)) +
-    scale_y_continuous(breaks = seq(-20, 50, 10), labels = seq(-20, 50, 10)) +
+    coord_cartesian(xlim = c(0, tmax + 0.1), ylim = c(-5, true_vax_protection + 10), expand = FALSE) +
+    scale_x_continuous(breaks = seq(0, tmax, 1), labels = seq(0, tmax, 1)) +
+    scale_y_continuous(breaks = seq(-20, true_vax_protection, 10), labels = seq(-20, true_vax_protection, 10)) +
     scale_fill_manual(values = c("gray90", "gray60"), guide = "none") +
     scale_color_manual(
         name = NULL,
@@ -269,7 +273,7 @@ suscep_plt <- ggplot(suscep_dt) +
         size = 2,
         shape = 18
     ) +
-    coord_cartesian(xlim = c(0.5, 6.6), ylim = c(0, 3.0), expand = FALSE) +
+    coord_cartesian(xlim = c(0.5, tmax + 0.6), ylim = c(0, 3.0), expand = FALSE) +
     scale_x_discrete(labels = NULL) +
     scale_fill_manual(
         name = NULL,
@@ -309,11 +313,11 @@ plt <- plot_grid(
     axis = "lr"
 )
 
-fig_dir <- here("plots")
+fig_dir <- ifelse(exp_name == "fig3", here("plots"), here("plots", "supplemental_figs"))
 dir.create(fig_dir, recursive = TRUE)
 
 ggsave(
-  here(fig_dir, "fig3.png"),
+  here(fig_dir, paste0(exp_name, ".png")),
   plt,
   width = 6,
   height = 9,
@@ -322,7 +326,7 @@ ggsave(
 )
 
 ggsave(
-  here(fig_dir, "fig3.pdf"),
+  here(fig_dir, paste0(exp_name, ".pdf")),
   plt,
   width = 6,
   height = 9,
