@@ -138,7 +138,7 @@ plt <- ggplot(dt) +
         )
     ) +
     scale_fill_manual(
-        name = "Final VE after 200 days...",
+        name = expression("Final" ~ widehat(VE) ~ "after 200 days..."),
         labels = labs,
         values = cl,
     ) +

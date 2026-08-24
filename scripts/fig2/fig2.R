@@ -186,7 +186,10 @@ het_plot_c <- final_ve_dt %>%
         theme_cowplot() +
         background_grid() +
         theme(legend.position = "none") +
-        labs(x = "True vaccine protection (%)", y = "Final VE (%)")
+        labs(
+            x = "True vaccine protection (%)",
+            y = expression("Final" ~ widehat(VE) ~ "(%)")
+        )
 
 ### MIDDLE ROW: unvaccinated distribution held constant (shape == 2)
 # Panel D: vaccinated distributions with different shape parameters vs constant
@@ -263,7 +266,10 @@ het_plot_f <- final_ve_dt %>%
         theme_cowplot() +
         background_grid() +
         theme(legend.position = "none") +
-        labs(x = "True vaccine protection (%)", y = "Final VE (%)")
+        labs(
+            x = "True vaccine protection (%)",
+            y = expression("Final" ~ widehat(VE) ~ "(%)")
+        )
 
 ### BOTTOM ROW: vaccinated distribution held constant (shape == 2)
 # Panel G: unvaccinated distributions with different shape parameters vs constant
@@ -340,7 +346,10 @@ het_plot_i <- final_ve_dt %>%
         theme_cowplot() +
         background_grid() +
         theme(legend.position = "none") +
-        labs(x = "True vaccine protection (%)", y = "Final VE (%)")
+        labs(
+            x = "True vaccine protection (%)",
+            y = expression("Final" ~ widehat(VE) ~ "(%)")
+        )
 
 # Combine panels into one plot and save
 het_curve_plot <- plot_grid(

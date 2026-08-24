@@ -83,7 +83,7 @@ lewnard_plt <- ggplot(lewnard_dt) +
         legend.box.background = element_rect(fill = "#ffffffaa", color = "#ffffff00")
     ) +
     background_grid() +
-    labs(x = "True vaccine protection (%)", y = "Final VE (%)")
+    labs(x = "True vaccine protection (%)", y = expression("Final " ~ widehat(VE) ~ " (%)"))
 
 # Heatmap scenario parameters
 pars <- list(
@@ -130,7 +130,10 @@ bias_plt <- ggplot(heatmap_dt) +
     geom_vline(xintercept = 7.5, color = "white", linewidth = 2) +
     scale_fill_paletteer_c(
         "grDevices::Reds",
-        name = "Difference between final VE and true\naverage vaccine protection (% pts)",
+        name = expression(atop(
+            "Difference between final" ~ widehat(VE) ~ "and true",
+            "average vaccine protection (% pts)"
+        )),
         n.breaks = 3,
         limits = c(NA, 0)
     ) +

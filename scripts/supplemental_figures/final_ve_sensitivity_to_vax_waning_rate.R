@@ -71,7 +71,7 @@ plt <- ggplot(dt) +
     ) +
     scale_fill_paletteer_c(
         "grDevices::Reds",
-        name = "Difference between final VE and true average vaccine protection (% pts)",
+        name = expression("Difference between final" ~ widehat(VE) ~ "and true average vaccine protection (% pts)"),
         n.breaks = 3,
         limits = c(NA, 0)
     ) +

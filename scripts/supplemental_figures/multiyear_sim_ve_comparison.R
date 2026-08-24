@@ -359,19 +359,24 @@ geom_rect(
         name = NULL,
         breaks = c("ve_cAR", "ve_ulreg", "ve_clreg", "ve_cohort"),
         values = c("black", "darkorchid", "forestgreen", "maroon"),
-        labels = c("VE cumulative", "VE unconditional", "VE conditional", "VE cohort")
+        labels = c(
+            expression(widehat(VE)^{cumulative}),
+            expression(widehat(VE)^{unconditional}),
+            expression(widehat(VE)^{conditional}),
+            expression(widehat(VE)^{cohort})
+        )
     ) +
     theme_cowplot() +
     background_grid(major = "y") +
     theme(
         legend.position = "inside",
-        legend.position.inside = c(0.4, 0.2),
+        legend.position.inside = c(0.5, 0.2),
         legend.background = element_rect(fill = "#ffffff")
     ) +
     guides(color = guide_legend(nrow = 2)) +
     labs(
         x = "Year",
-        y = "Final VE estimate (%)"
+        y = expression("Final" ~ widehat(VE) ~ "estimate (%)")
     )
 
 print("PLOTTING SUSCEPTIBILITY DATA")

@@ -91,7 +91,7 @@ heatmap_plot <- ggplot(heatmap_dt) +
     ) +
     scale_fill_paletteer_c(
         "ggthemes::Orange-Blue Diverging",
-        name = "Difference between 200-day VE and true vaccine protection (% pts)",
+        name = expression("Difference between 200-day" ~ widehat(VE) ~ "and true vaccine protection (% pts)"),
         limits = c(-fill_lim, fill_lim),
         breaks = c(0)
     ) +

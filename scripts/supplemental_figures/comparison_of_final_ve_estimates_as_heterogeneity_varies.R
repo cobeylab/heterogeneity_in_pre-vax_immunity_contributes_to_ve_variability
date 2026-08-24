@@ -7,6 +7,14 @@ library(paletteer)
 source(here("src", "full_VE_model.R"))
 source(here("src", "data_generation.R"))
 
+ve_labels <- c(
+    cumul_ve = expression(widehat(VE)^{cumulative}),
+    cohrt_ve = expression(widehat(VE)^{cohort}),
+    ulreg_ve = expression(widehat(VE)^{unconditional}),
+    clreg_ve = expression(widehat(VE)^{conditional}),
+    insnt_ve = expression(widehat(VE)^{instantaneous})
+)
+
 set.seed(0)
 
 # Scenario options (no waning, continuous pre-vaccination risk, VE from cumulative attack rates)
@@ -69,7 +77,7 @@ final_ve_dt <- pars_dt %>%
         method_f = factor(
             method,
             levels = c("cumul_ve", "cohrt_ve", "ulreg_ve", "clreg_ve", "insnt_ve"),
-            labels = c("VE cumulative", "VE cohort", "VE unconditional", "VE conditional", "VE instantaneous")
+            labels = ve_labels
         )
     )
 
@@ -121,7 +129,7 @@ top <- final_ve_dt %>%
             values = cl,
             labels = labs
         ) +
-        facet_grid(cols = vars(method_f)) +
+        facet_grid(cols = vars(method_f), labeller = label_parsed) +
         theme_cowplot() +
         background_grid() +
         theme(
@@ -130,7 +138,7 @@ top <- final_ve_dt %>%
             # legend.key.width = unit(35, "pt"),
             legend.spacing.y = unit(1, "pt")
         ) +
-        labs(x = "True vaccine protection (%)", y = "Final VE (%)")
+        labs(x = "True vaccine protection (%)", y = expression("Final" ~ widehat(VE) ~ "(%)"))
 
 mid <- final_ve_dt %>%
     filter(alpha_v == 20, alpha_u != 20) %>%
@@ -149,11 +157,11 @@ mid <- final_ve_dt %>%
             values = cl,
             labels = labs
         ) +
-        facet_grid(cols = vars(method_f)) +
+        facet_grid(cols = vars(method_f), labeller = label_parsed) +
         theme_cowplot() +
         background_grid() +
         theme(legend.position = "none") +
-        labs(x = "True vaccine protection (%)", y = "Final VE (%)")
+        labs(x = "True vaccine protection (%)", y = expression("Final" ~ widehat(VE) ~ "(%)"))
 
 bot <- final_ve_dt %>%
     filter(alpha_u == 20, alpha_v != 20) %>%
@@ -172,11 +180,11 @@ bot <- final_ve_dt %>%
             values = cl,
             labels = labs
         ) +
-        facet_grid(cols = vars(method_f)) +
+        facet_grid(cols = vars(method_f), labeller = label_parsed) +
         theme_cowplot() +
         background_grid() +
         theme(legend.position = "none") +
-        labs(x = "True vaccine protection (%)", y = "Final VE (%)")
+        labs(x = "True vaccine protection (%)", y = expression("Final" ~ widehat(VE) ~ "(%)"))
 
 plt <- plot_grid(
     top, mid, bot,

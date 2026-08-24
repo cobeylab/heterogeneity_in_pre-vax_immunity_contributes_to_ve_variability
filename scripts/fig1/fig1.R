@@ -106,7 +106,10 @@ heatmap_plot <- ggplot(heatmap_dt) +
     ) +
     scale_fill_paletteer_c(
         "ggthemes::Orange-Blue Diverging",
-        name = "Difference between starting VE\nand true vaccine protection (% pts)",
+        name = expression(atop(
+            'Difference between starting' ~ widehat(VE),
+            'and true vaccine protection (% pts)'
+        )),
         limits = c(-fill_lim, fill_lim),
         breaks = c(0)
     ) +
@@ -208,7 +211,7 @@ curves_plot <- ggplot(curves_dt) +
     theme_cowplot() +
     background_grid(minor = "y") +
     theme(legend.position = "none") +
-    labs(x = "Time (days)", y = "Vaccine effectiveness (%)")
+    labs(x = "Time (days)", y = "Estimated vaccine effectiveness (%)")
 
 # Combine panels into one plot and save
 combo <- plot_grid(

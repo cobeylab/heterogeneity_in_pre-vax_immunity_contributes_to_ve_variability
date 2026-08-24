@@ -78,7 +78,7 @@ fl <- c(
 labs <- c(
   "unvax_hazard" = "Unvaccinated",
   "vax_hazard" = "Vaccinated",
-  "estd_ve" = "VE estimate",
+  "estd_ve" = expression(widehat(VE) ~ "estimate"),
   "hazard_ratio" = "1 - Total hazard ratio",
   "avg_vax_protect" = "True average vaccine protection"
 )
@@ -165,7 +165,7 @@ ve_plt <- ggplot(dt %>% filter(name %in% ve_names)) +
         legend.key.spacing.y = unit(0.01, "npc"),
         legend.key.width = unit(0.075, "npc")
     ) +
-    labs(x = "Time (days)", y = "Vaccine effectiveness (%)")
+    labs(x = "Time (days)", y = "Estimated vaccine\neffectiveness (%)")
 
 # Combine panels and save plot
 plt <- plot_grid(

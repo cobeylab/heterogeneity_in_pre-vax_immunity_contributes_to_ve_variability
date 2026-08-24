@@ -249,7 +249,7 @@ final_ve_plt <- ggplot(ve_dt) +
     theme(legend.position = "top") +
     labs(
         x = "Time (years)",
-        y = "Vaccine effectiveness (%)"
+        y = "Estimated vaccine\neffectiveness (%)"
     )
 
 print("PLOTTING SUSCEPTIBILITY DATA")

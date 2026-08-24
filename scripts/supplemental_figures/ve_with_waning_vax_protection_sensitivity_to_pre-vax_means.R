@@ -58,7 +58,7 @@ cl <- c(
 )
 
 labs <- c(
-    "estd_ve" = "Vaccine effectiveness",
+    "estd_ve" = "Estimated\nvaccine effectiveness",
     "avg_vax_protect" = "True average\nvaccine protection"
 )
 
@@ -102,7 +102,7 @@ ve_plt <- ggplot(dt) +
         legend.key.spacing.y = unit(0.001, "npc"),
         legend.box = "vertical"
     ) +
-    labs(x = "Time (days)", y = "Vaccine effectiveness (%)")
+    labs(x = "Time (days)", y = "Estimated vaccine effectiveness (%)")
 
 fig_dir <- here("plots", "supplemental_figs")
 dir.create(fig_dir)
