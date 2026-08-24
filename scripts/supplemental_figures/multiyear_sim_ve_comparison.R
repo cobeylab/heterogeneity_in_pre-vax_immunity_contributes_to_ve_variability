@@ -176,10 +176,10 @@ ve_comp <- final_ve_dt %>%
     summarize(
         mean_diff = mean(ve_diff, na.rm = TRUE),
         lower_diff = quantile(ve_diff, probs = c(0.025), na.rm = TRUE),
-        upper_diff = quantile(ve_diff, probs = c(0.925), na.rm = TRUE)
+        upper_diff = quantile(ve_diff, probs = c(0.975), na.rm = TRUE)
     )
 
-print("Difference in VE rel. to VE^cumulative (mean, 95% IQR)")
+print("Difference in VE rel. to VE^cumulative (mean, 95% interval)")
 print(ve_comp)
 
 print("CLEANING SUSCEPTIBILITY DATA")

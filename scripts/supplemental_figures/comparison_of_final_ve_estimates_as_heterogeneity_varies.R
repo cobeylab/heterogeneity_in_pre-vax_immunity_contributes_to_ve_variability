@@ -92,10 +92,10 @@ ve_comp <- final_ve_dt %>%
     summarize(
         mean_diff = mean(ve_diff),
         lower_diff = quantile(ve_diff, probs = c(0.025)),
-        upper_diff = quantile(ve_diff, probs = c(0.925))
+        upper_diff = quantile(ve_diff, probs = c(0.975))
     )
 
-print("Difference in VE rel. to VE^cumulative (mean, 95% IQR)")
+print("Difference in VE rel. to VE^cumulative (mean, 95% interval)")
 print(ve_comp)
 
 # Maintain consistent linetypes

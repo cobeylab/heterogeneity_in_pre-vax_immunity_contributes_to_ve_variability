@@ -83,10 +83,10 @@ no_waning_ve_compare <- final_ve_dt %>%
     summarize(
         mean_diff = mean(ve_diff, na.rm = TRUE),
         lower_diff = quantile(ve_diff, probs = c(0.025), na.rm = TRUE),
-        upper_diff = quantile(ve_diff, probs = c(0.925), na.rm = TRUE)
+        upper_diff = quantile(ve_diff, probs = c(0.975), na.rm = TRUE)
     )
 
-print("Mean and 95% IQR of difference between VE estimates and VE^cumulative")
+print("Mean and 95% interval of difference between VE estimates and VE^cumulative")
 print("Scenarios: varying true vax protection and pre-vax risk means")
 print(no_waning_ve_compare)
 
@@ -164,9 +164,9 @@ waning_ve_compare <- final_ve_dt %>%
     summarize(
         mean_diff = mean(ve_diff, na.rm = TRUE),
         lower_diff = quantile(ve_diff, probs = c(0.025), na.rm = TRUE),
-        upper_diff = quantile(ve_diff, probs = c(0.925), na.rm = TRUE)
+        upper_diff = quantile(ve_diff, probs = c(0.975), na.rm = TRUE)
     )
 
-print("Mean and 95% IQR of difference between VE estimates and VE^cumulative")
+print("Mean and 95% interval of difference between VE estimates and VE^cumulative")
 print("Scenarios: varying true vax protection, pre-vax risk means and vax waning")
 print(waning_ve_compare)
