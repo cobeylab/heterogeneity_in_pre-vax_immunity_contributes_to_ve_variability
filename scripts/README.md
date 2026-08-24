@@ -14,7 +14,7 @@ Command: `Rscript fig2/fig2.R`
 
 ### Figure 3: Dynmaic population immunity affects pre-vaccination risk and annual VE
 
-Commands: `cd fig3`, `bash ./fig3.sh`
+Commands: `cd fig3`, `bash ./fig3.sh fig3.toml`
 
 Note: The single simulation uses one core and about 4.5GB of memory. The simulation and figure generation takes approximately 40 minutes to finish (on AMD Ryzen 5 PRO 6650U).
 
