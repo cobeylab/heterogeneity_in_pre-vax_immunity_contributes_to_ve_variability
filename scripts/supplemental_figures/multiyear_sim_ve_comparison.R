@@ -141,10 +141,11 @@ unvax_tn_linelist <- inf_dt %>%
 # a random sample of the total linelists for each year is used to minimize memory usage
 # and generate sample sizes small enough for conditional logistic regression to succeeed
 sample_prop <- 0.0015
+year_to_two_week_block <- 2 / 52 # 2 weeks per block / 52 weeks per year
 
 linelist <- bind_rows(vax_tp_linelist, vax_tn_linelist,
                       unvax_tp_linelist, unvax_tn_linelist) %>%
-    mutate(block = as.integer((t %/% 0.04) - ((year - 1) * 25))) %>%
+    mutate(block = floor((t / year_to_two_week_block) - ((year - 1) * (1 / year_to_two_week_block)))) %>%
     group_by(year) %>%
     nest() %>%
     mutate(sample_data = map(data, function(x) slice_sample(x, prop = sample_prop))) %>%
