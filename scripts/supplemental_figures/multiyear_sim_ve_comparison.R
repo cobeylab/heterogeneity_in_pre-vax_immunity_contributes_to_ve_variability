@@ -94,13 +94,13 @@ inf_dt <- results %>%
     ungroup() %>%
     select(exp, t, year, ends_with("_tp_inf"), ends_with("_tn_inf")) %>%
     pivot_longer(!c(exp, t, year), values_to = "per_10k_inc") %>%
-    mutate(count = as.integer(per_10k_inc / per_10k))
+    mutate(count = round(per_10k_inc / per_10k))
 
 # generate linelists from the counts of cases and controls
 vax_tp_linelist <- inf_dt %>%
     filter(name == "v_tp_inf") %>%
     mutate(
-        count = as.integer(per_10k_inc / per_10k),
+        count = round(per_10k_inc / per_10k),
         vax = 1,
         inf = 1
     ) %>%
@@ -110,7 +110,7 @@ vax_tp_linelist <- inf_dt %>%
 vax_tn_linelist <- inf_dt %>%
     filter(name == "v_tn_inf") %>%
     mutate(
-        count = as.integer(per_10k_inc / per_10k),
+        count = round(per_10k_inc / per_10k),
         vax = 1,
         inf = 0
     ) %>%
@@ -120,7 +120,7 @@ vax_tn_linelist <- inf_dt %>%
 unvax_tp_linelist <- inf_dt %>%
     filter(name == "u_tp_inf") %>%
     mutate(
-        count = as.integer(per_10k_inc / per_10k),
+        count = round(per_10k_inc / per_10k),
         vax = 0,
         inf = 1
     ) %>%
@@ -130,7 +130,7 @@ unvax_tp_linelist <- inf_dt %>%
 unvax_tn_linelist <- inf_dt %>%
     filter(name == "u_tn_inf") %>%
     mutate(
-        count = as.integer(per_10k_inc / per_10k),
+        count = round(per_10k_inc / per_10k),
         vax = 0,
         inf = 0
     ) %>%
