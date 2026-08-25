@@ -85,3 +85,21 @@ Command: `Rscript supplemental_figures/ve_estimate_comparison.R`
 Figure showing how differential mean pre-vaccination risk and waning vaccine protection can result in VE crossing zero.
 
 Command: `Rscript supplemental_figures/ve_with_waning_vax_protection_sensitivity_to_pre-vax_means.R`
+
+## Validation
+
+### Validation of codebase against main-text equations 1a,b,c
+
+The `validation.R` script re-implements main-text equations for instantaneous, cumulative, and cohort VE estimates. It then compares the VE estimates generated from the code in `src` against the re-implemented analytical estimates. The scripts counts the number of times the re-implemented and codebase-derived VE estimates differ by more than 1e-10.
+
+Command: `Rscript validation/validation.R`
+
+### Validation of simulation model against analytical model
+
+The script first runs a validation simulation. To better compare against the analytical cumulative-attack-rate-derived VE estimate, the validation simulation runs for 200 days, has a constant exogenous infection hazard, and has no waning infection-derived immunity (i.e., infected individuals cannot be re-infected). A figure is saved to `plots/supplemental_figs` comparing the simulated cumulative attack rates and VE estimate against the analytical expectation. The default validation scenario is one where the vaccinated and unvaccinated pre-vaccination susceptibility distributions have identical means (1) and shape parameters (20). You can alter the validation scenario in `validation/config.toml`. The parameters you can might alter are:
+
+- `beta`: the exogenous infection hazard
+- `(un)vax_mean_pre_vax_suscep`: (un)vaccinated mean pre-vaccination susceptibility
+- `(un)vax_pre_vax_suscep_shape`: (un)vaccinated pre-vaccination susceptibility distribution shape parameter
+
+Command: `cd validation; bash ./sim_validation.sh`

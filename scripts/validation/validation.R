@@ -1,8 +1,6 @@
 library(here)
 library(tidyverse)
 library(survival)
-library(cowplot)
-library(paletteer)
 
 source(here("src", "full_VE_model.R"))
 source(here("src", "data_generation.R"))

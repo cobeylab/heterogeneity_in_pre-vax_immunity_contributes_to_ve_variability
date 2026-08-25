@@ -1,6 +1,6 @@
 [parameters]
 # experiment name
-exp_name = "diagnostics"
+exp_name = "validation"
 
 # tmp directory path
 tmp_dir = "default"
