@@ -145,7 +145,7 @@ estimate_ve_cohort_sim <- function(x, year, tot_pop_size, vax_coverage) {
         group_by(vax) %>%
         summarize(
             tot_infs = n(),
-            tot_pyar_avoided = tot_pop_size - sum(pyar_avoided)
+            tot_pyar_avoided = sum(pyar_avoided)
         ) %>%
         ungroup() %>%
         # calculate sampled population size by vaccination status
