@@ -191,9 +191,9 @@ het_plot_c <- final_ve_dt %>%
             y = expression("Final" ~ widehat(VE) ~ "(%)")
         )
 
-### MIDDLE ROW: unvaccinated distribution held constant (shape == 2)
-# Panel D: vaccinated distributions with different shape parameters vs constant
-#          unvaccinated distribution
+### MIDDLE ROW: vaccinated distribution held constant (shape == 2)
+# Panel D: unvaccinated distributions with different shape parameters vs constant
+#          vaccinated distribution
 het_plot_d <- ggplot() +
     geom_vline(
         xintercept = 1,
@@ -220,7 +220,7 @@ het_plot_d <- ggplot() +
     theme(legend.position = "none") +
     labs(x = "Pre-vaccination susceptibility", y = "Density")
 
-# Panel E: cumulative attack rates with constant unvaccinated distribution
+# Panel E: cumulative attack rates with constant vaccinated distribution
 het_plot_e <- cAR_dt %>%
     filter(alpha_v == 20, alpha_u != 20) %>%
     ggplot() +
@@ -244,7 +244,7 @@ het_plot_e <- cAR_dt %>%
         theme(legend.position = "none") +
         labs(x = "Time (days)", y = "Cumulative attack\nrate (%)")
 
-# Panel F: final VE vs. true vaccine protection with constant unvaccinated distribution
+# Panel F: final VE vs. true vaccine protection with constant vaccinated distribution
 het_plot_f <- final_ve_dt %>%
     filter(alpha_v == 20, alpha_u != 20) %>%
     ggplot() +
@@ -271,9 +271,9 @@ het_plot_f <- final_ve_dt %>%
             y = expression("Final" ~ widehat(VE) ~ "(%)")
         )
 
-### BOTTOM ROW: vaccinated distribution held constant (shape == 2)
-# Panel G: unvaccinated distributions with different shape parameters vs constant
-#          vaccinated distribution
+### BOTTOM ROW: unvaccinated distribution held constant (shape == 2)
+# Panel G: vaccinated distributions with different shape parameters vs constant
+#          unvaccinated distribution
 het_plot_g <- ggplot() +
     geom_vline(
         xintercept = 1,
@@ -300,7 +300,7 @@ het_plot_g <- ggplot() +
     theme(legend.position = "none") +
     labs(x = "Pre-vaccination susceptibility", y = "Density")
 
-# Panel H: cumulative attack rates with constant vaccinated distribution
+# Panel H: cumulative attack rates with constant unvaccinated distribution
 het_plot_h <- cAR_dt %>%
     filter(alpha_u == 20, alpha_v != 20) %>%
     ggplot() +
@@ -324,7 +324,7 @@ het_plot_h <- cAR_dt %>%
         theme(legend.position = "none") +
         labs(x = "Time (days)", y = "Cumulative attack\nrate (%)")
 
-# Panel I: final VE vs. true vaccine protection with constant vaccinated distribution
+# Panel I: final VE vs. true vaccine protection with constant unvaccinated distribution
 het_plot_i <- final_ve_dt %>%
     filter(alpha_u == 20, alpha_v != 20) %>%
     ggplot() +
