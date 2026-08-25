@@ -1,17 +1,9 @@
 library(here)
 library(tidyverse)
 library(survival)
-library(cowplot)
-library(paletteer)
 
 source(here("src", "full_VE_model.R"))
 source(here("src", "data_generation.R"))
-
-facet_labels = c(
-    insnt_ve = "VE instantaneous",
-    ulreg_ve = "VE unconditional",
-    clreg_ve = "VE conditional"
-)
 
 ### Final ve sweeping across mean pre-vaccination risk and true vaccine protection (NO WANING)
 
