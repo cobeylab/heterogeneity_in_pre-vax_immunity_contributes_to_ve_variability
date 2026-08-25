@@ -43,7 +43,7 @@ suscep <- read_csv(suscep_filepath, show_col_types = FALSE)
 
 print("CLEANING INFECTION DATA")
 
-per_10k <- 1e3 / pars$pop_size
+per_1k <- 1e3 / pars$pop_size
 
 # calculate mean daily infections per 10k people by vaccination status
 inf_dt <- results %>%
@@ -55,8 +55,8 @@ inf_dt <- results %>%
     ) %>%
     group_by(exp, t) %>%
     summarize(
-        v_inf = mean(vax_inf) * per_10k,
-        u_inf = mean(unvax_inf) * per_10k
+        v_inf = mean(vax_inf) * per_1k,
+        u_inf = mean(unvax_inf) * per_1k
     ) %>%
     ungroup() %>%
     pivot_longer(!c(exp, t))

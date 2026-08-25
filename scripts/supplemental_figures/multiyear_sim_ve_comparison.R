@@ -74,7 +74,7 @@ unvax_test_neg_infections <- function(time, beta, pars, shift = 0.5) {
 
 print("CLEANING INFECTION DATA AND ESTIMATING TEST-NEG INFECTIONS")
 
-per_10k <- 1e3 / pars$pop_size
+per_1k <- 1e3 / pars$pop_size
 
 # gather test-positive and test-negative infections and adjust per 10k people
 inf_dt <- results %>%
@@ -86,55 +86,55 @@ inf_dt <- results %>%
     ) %>%
     group_by(exp, t) %>%
     mutate(
-        v_tp_inf = mean(vax_inf) * per_10k,
-        u_tp_inf = mean(unvax_inf) * per_10k,
-        v_tn_inf = vax_test_neg_infections(t, beta_test_neg, pars) * per_10k,
-        u_tn_inf = unvax_test_neg_infections(t, beta_test_neg, pars) * per_10k
+        v_tp_inf = mean(vax_inf) * per_1k,
+        u_tp_inf = mean(unvax_inf) * per_1k,
+        v_tn_inf = vax_test_neg_infections(t, beta_test_neg, pars) * per_1k,
+        u_tn_inf = unvax_test_neg_infections(t, beta_test_neg, pars) * per_1k
     ) %>%
     ungroup() %>%
     select(exp, t, year, ends_with("_tp_inf"), ends_with("_tn_inf")) %>%
-    pivot_longer(!c(exp, t, year), values_to = "per_10k_inc") %>%
-    mutate(count = round(per_10k_inc / per_10k))
+    pivot_longer(!c(exp, t, year), values_to = "per_1k_inc") %>%
+    mutate(count = round(per_1k_inc / per_1k))
 
 # generate linelists from the counts of cases and controls
 vax_tp_linelist <- inf_dt %>%
     filter(name == "v_tp_inf") %>%
     mutate(
-        count = round(per_10k_inc / per_10k),
+        count = round(per_1k_inc / per_1k),
         vax = 1,
         inf = 1
     ) %>%
-    select(-c(per_10k_inc, exp, name)) %>%
+    select(-c(per_1k_inc, exp, name)) %>%
     uncount(count)
 
 vax_tn_linelist <- inf_dt %>%
     filter(name == "v_tn_inf") %>%
     mutate(
-        count = round(per_10k_inc / per_10k),
+        count = round(per_1k_inc / per_1k),
         vax = 1,
         inf = 0
     ) %>%
-    select(-c(per_10k_inc, exp, name)) %>%
+    select(-c(per_1k_inc, exp, name)) %>%
     uncount(count)
 
 unvax_tp_linelist <- inf_dt %>%
     filter(name == "u_tp_inf") %>%
     mutate(
-        count = round(per_10k_inc / per_10k),
+        count = round(per_1k_inc / per_1k),
         vax = 0,
         inf = 1
     ) %>%
-    select(-c(per_10k_inc, exp, name)) %>%
+    select(-c(per_1k_inc, exp, name)) %>%
     uncount(count)
 
 unvax_tn_linelist <- inf_dt %>%
     filter(name == "u_tn_inf") %>%
     mutate(
-        count = round(per_10k_inc / per_10k),
+        count = round(per_1k_inc / per_1k),
         vax = 0,
         inf = 0
     ) %>%
-    select(-c(per_10k_inc, exp, name)) %>%
+    select(-c(per_1k_inc, exp, name)) %>%
     uncount(count)
 
 # combine the linelists together
@@ -279,7 +279,7 @@ inf_plt <- ggplot(inf_dt) +
     ) +
     aes(
         x = t,
-        y = per_10k_inc,
+        y = per_1k_inc,
         color = name,
         linetype = name
     ) + 
