@@ -5,6 +5,8 @@ library(RcppTOML)
 library(cowplot)
 library(paletteer)
 
+set.seed(0)
+
 # parse command line arguments
 if (interactive()) {
     parser <- OptionParser()
