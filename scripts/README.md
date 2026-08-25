@@ -76,7 +76,7 @@ Command: `Rscript supplemental_figures/starting_ve_sensitivity_to_pre-vax_means.
 
 ### `ve_estimate_comparison.R`
 
-Compares VE estimates across scenarios with varying pre-vaccination susceptibility means, vaccine protection waning rate, and true vaccine protection.
+Compares VE estimates across scenarios with varying pre-vaccination susceptibility means, vaccine protection waning rate, and true vaccine protection. This script does not generate a figure, but instead only outputs information to the console.
 
 Command: `Rscript supplemental_figures/ve_estimate_comparison.R`
 
