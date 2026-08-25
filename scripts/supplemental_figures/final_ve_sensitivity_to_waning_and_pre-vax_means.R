@@ -29,7 +29,7 @@ crosses_truth <- function(start, end, avg) {
     end_under <- end < avg
 
     if (starts_pos && !ends_neg) {
-        # positive and...
+        # starts positive and...
         if (start_over && !end_under) {
             # always overestimates
             return("ovr2ovr")
@@ -43,11 +43,14 @@ crosses_truth <- function(start, end, avg) {
             return("pos.other")
         }
     } else if (starts_pos && ends_neg) {
-        # crosses zero
+        # starts positive and crosses zero
         return("pos2neg")
     } else if (!starts_pos && ends_neg) {
-        # negative
+        # starts and ends negative
         return("neg2neg")
+    } else {
+        # starts negative and ends positive
+        return("neg2pos")
     }
 }
 
