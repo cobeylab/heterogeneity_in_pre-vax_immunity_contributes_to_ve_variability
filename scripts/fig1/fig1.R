@@ -61,7 +61,7 @@ heatmap_dt <- generate_par_sets(pars, include_early = FALSE) %>%
     ungroup() %>%
     mutate(
         true_vax_protection = map_vec(pars, function(x) (1 - x$theta_0) * 100),
-        starting_ve = map_vec(pars, function(x) estimate_ve_starting(x) * 100),
+        starting_ve = map_vec(pars, function(x) estimate_ve_starting(x)),
         starting_ve_bias = starting_ve - true_vax_protection,
         cell_label = clean_label(starting_ve_bias, sigdig = 2)
     ) %>%
@@ -166,7 +166,7 @@ curves_dt <- curves_dt %>%
     ungroup() %>%
     mutate(
         true_vax_protection = map_vec(pars, function(x) (1 - x$theta_0) * 100),
-        starting_ve = map_vec(pars, function(x) estimate_ve_starting(x) * 100),
+        starting_ve = map_vec(pars, function(x) estimate_ve_starting(x)),
         estd_ve = map_vec(pars, function(x) estimate_math_ve(x, opts)),
         starting_ve_bias = starting_ve - true_vax_protection,
         cell_label = clean_label(starting_ve_bias, sigdig = 2)

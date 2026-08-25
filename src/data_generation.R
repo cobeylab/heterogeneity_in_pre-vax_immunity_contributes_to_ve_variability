@@ -88,7 +88,7 @@ estimate_math_ve <- function(pars, opts) {
 
 # Estimate starting VE from vaccine direct effects and mean pre-vaccination risk.
 estimate_ve_starting <- function(x) {
-    return(1 - (x$theta_0 * (x$epsilon_v / x$epsilon_u)))
+    return((1 - (x$theta_0 * (x$epsilon_v / x$epsilon_u))) * 100)
 }
 
 # Estimate VE using analytical cohort-like VE model.
