@@ -21,8 +21,7 @@ generate_par_sets <- function(p, include_early = TRUE, early_time = 1e-3) {
 # o --> list of options (o$instantaneous must be FALSE)
 generate_counts <- function(p, o) {
     if (o$instantaneous == TRUE) {
-        print("ERROR: generate_counts must have o$instantaneous = FALSE")
-        exit()
+        stop("ERROR: generate_counts must have o$instantaneous = FALSE")
     }
 
     # Generate time points

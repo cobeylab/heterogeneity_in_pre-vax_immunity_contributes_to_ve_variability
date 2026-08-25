@@ -46,7 +46,7 @@ function main()
 
     if length(par_sets) > 1
         println("ERROR: more than one scenario is parameterized in TOML file")
-        exit()
+        exit(1)
     end
 
     pars = Parameters(par_sets[1])
