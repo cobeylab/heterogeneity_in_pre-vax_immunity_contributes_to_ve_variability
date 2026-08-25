@@ -90,7 +90,7 @@ Command: `Rscript supplemental_figures/ve_with_waning_vax_protection_sensitivity
 
 ### Validation of codebase against main-text equations 1a,b,c
 
-The `validation.R` script re-implements main-text equations for instantaneous, cumulative, and cohort VE estimates. It then compares the VE estimates generated from the code in `src` against the re-implemented analytical estimates. The scripts counts the number of times the re-implemented and codebase-derived VE estimates differ by more than 1e-10.
+The `validation.R` script re-implements main-text equations for instantaneous, cumulative, and cohort VE estimates. It then compares the VE estimates generated from the code in `src` against the re-implemented analytical estimates. The scripts counts the number of times the re-implemented and codebase-derived VE estimates differ by more than 1e-10. VE estimates are compared across 24,300 parameter combinations (varying the exogenous infection hazard, true vaccine protection, and pre-vaccination susceptibility distribution means and variances).
 
 Command: `Rscript validation/validation.R`
 

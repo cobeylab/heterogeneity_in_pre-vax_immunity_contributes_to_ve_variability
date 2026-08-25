@@ -75,8 +75,9 @@ insnt_ve_opts <- opts
 insnt_ve_opts$instantaneous <- TRUE
 
 # Parameters to estimate final VE 
+# start time is set near 0, not at zero to avoid irrelavent NAs at time = 0
 pars = list(
-    start_time = 0,
+    start_time = 1e-3,
     end_time = 200,
     dt = 10,
     lambda = c(0.001, 0.005, 0.01),
@@ -87,7 +88,7 @@ pars = list(
     alpha_u = c(0.2, 2, 20)
 )
 
-cumul_ve_comp <- generate_par_sets(pars) %>%
+cumul_ve_comp <- generate_par_sets(pars, include_early = FALSE) %>%
     mutate(par_set_id = row_number()) %>%
     group_by(par_set_id) %>%
     nest(pars = -group_cols()) %>%
@@ -99,7 +100,7 @@ cumul_ve_comp <- generate_par_sets(pars) %>%
     ) %>%
     arrange(desc(ve_diff))
 
-insnt_ve_comp <- generate_par_sets(pars) %>%
+insnt_ve_comp <- generate_par_sets(pars, include_early = FALSE) %>%
     mutate(par_set_id = row_number()) %>%
     group_by(par_set_id) %>%
     nest(pars = -group_cols()) %>%
@@ -111,7 +112,7 @@ insnt_ve_comp <- generate_par_sets(pars) %>%
     ) %>%
     arrange(desc(ve_diff))
 
-cohrt_ve_comp <- generate_par_sets(pars) %>%
+cohrt_ve_comp <- generate_par_sets(pars, include_early = FALSE) %>%
     mutate(par_set_id = row_number()) %>%
     group_by(par_set_id) %>%
     nest(pars = -group_cols()) %>%
@@ -123,21 +124,29 @@ cohrt_ve_comp <- generate_par_sets(pars) %>%
     ) %>%
     arrange(desc(ve_diff))
 
-threshold <- 1e-10
-n_large_cumul_ve_diffs <- cumul_ve_comp %>%
-    filter(ve_diff > threshold) %>%
-    nrow()
+count_diffs_above_threshold <- function(.df, threshold) {
+    .df %>%
+        filter(ve_diff > threshold) %>%
+        nrow()
+}
 
-n_large_insnt_ve_diffs <- insnt_ve_comp %>%
-    filter(ve_diff > threshold) %>%
-    nrow()
+count_na_diffs <- function(.df) {
+    .df %>%
+        filter(is.na(ve_diff)) %>%
+        nrow()
+}
 
-n_large_cohrt_ve_diffs <- cohrt_ve_comp %>%
-    filter(ve_diff > threshold) %>%
-    nrow()
+ve_diff_threshold <- 1e-10
+n_large_cumul_ve_diffs <- count_diffs_above_threshold(cumul_ve_comp, ve_diff_threshold)
+n_large_insnt_ve_diffs <- count_diffs_above_threshold(insnt_ve_comp, ve_diff_threshold)
+n_large_cohrt_ve_diffs <- count_diffs_above_threshold(cohrt_ve_comp, ve_diff_threshold)
 
-print("Difference between VE from code implementation and main text equations")
-print(paste0("(number of times the difference > ", threshold, ")"))
-print(paste0("VE^instantaneous: ", n_large_insnt_ve_diffs))
-print(paste0("VE^cumulative: ", n_large_cumul_ve_diffs))
-print(paste0("VE^cohort: ", n_large_cohrt_ve_diffs))
+n_na_cumul_ve_diffs <- count_na_diffs(cumul_ve_comp)
+n_na_insnt_ve_diffs <- count_na_diffs(insnt_ve_comp)
+n_na_cohrt_ve_diffs <- count_na_diffs(cohrt_ve_comp)
+
+print(paste0("Number of times the difference between VE from code implementation and main text equations is greater than ", ve_diff_threshold))
+print(paste0("(number of VE differences that are NA)"))
+print(paste0("VE^instantaneous: ", n_large_insnt_ve_diffs, " (", n_na_insnt_ve_diffs, " NAs)"))
+print(paste0("VE^cumulative: ", n_large_cumul_ve_diffs, " (", n_na_cumul_ve_diffs, " NAs)"))
+print(paste0("VE^cohort: ", n_large_cohrt_ve_diffs, " (", n_na_cohrt_ve_diffs, " NAs)"))
