@@ -14,7 +14,7 @@ function parse_cmdline()
             required = true
             help = "path to config TOML file (abs path or rel path from this script)"
         "--clean"
-            default = true
+            default = false
             arg_type = Bool
             help = "clean up (delete) sim datafiles after collection into results.csv"
     end
@@ -27,8 +27,11 @@ function collect_simulation_data(sim_dir)
     results = Vector{DataFrame}(undef, length(csv_vec))
 
     for i in eachindex(csv_vec)
-        f = joinpath(sim_dir, csv_vec[i])
-        results[i] = DataFrame(CSV.File(f))
+        # only process csv files
+        if endswith(csv_vec[i], ".csv")
+            f = joinpath(sim_dir, csv_vec[i])
+            results[i] = DataFrame(CSV.File(f))
+        end
     end
 
     return results

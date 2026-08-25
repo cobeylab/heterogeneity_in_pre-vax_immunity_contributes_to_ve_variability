@@ -16,7 +16,7 @@ Command: `Rscript fig2/fig2.R`
 
 Commands: `cd fig3`, `bash ./fig3.sh fig3.toml`
 
-Note: The single simulation uses one core and about 4.5GB of memory. The simulation and figure generation takes approximately 40 minutes to finish (on AMD Ryzen 5 PRO 6650U).
+The single simulation uses one core and about 4.5GB of memory. The simulation and figure generation takes approximately 40 minutes to finish (on AMD Ryzen 5 PRO 6650U). The helper bash script explicitly cleans up the temporary simulation data directory, which involves a recursive `rm`. If you have edited the `sim_dir` path in the TOML config file, you may not want this behavior.
 
 ## Supplemental figures
 
