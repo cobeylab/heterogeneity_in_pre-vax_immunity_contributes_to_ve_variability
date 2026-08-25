@@ -52,7 +52,7 @@ end
     vaccination_checkpoint::F     # time point when re-vaccination occurs
     t_vax_start::F                # time when vaccination first occurs
 
-    vax_efficacy::F               # true vaccine protection
+    true_vax_protection::F               # true vaccine protection
     vax_imm_halflife::F           # half life for exponential waning of vaccine immunity
 end
 
@@ -73,7 +73,7 @@ end
 # Object to store vaccination data
 @kwdef struct Vaccination
     t_vaccination::Float64 = -1.0   # time of vaccination
-    vax_efficacy::Float64 = -1.0    # starting true vaccine protection
+    true_vax_protection::Float64 = -1.0    # starting true vaccine protection
 end
 
 # Object to store data for individuals
@@ -112,14 +112,14 @@ function is_vaccinated(p::Person)
 end
 
 # Get a vaccinated person's current vaccine protection
-function current_vax_efficacy(par::Parameters, p::Person)
+function current_true_vax_protection(par::Parameters, p::Person)
     @assert is_vaccinated(p) == true
     if par.vax_imm_halflife == zero(par.vax_imm_halflife)
-        return p.vax_hist[end].vax_efficacy
+        return p.vax_hist[end].true_vax_protection
     else
         t_delta = p.tnow - p.vax_hist[end].t_vaccination
         waning_mult = exp(-t_delta * (log(2) / par.vax_imm_halflife))
-        return p.vax_hist[end].vax_efficacy * waning_mult
+        return p.vax_hist[end].true_vax_protection * waning_mult
     end
 end
 
@@ -150,7 +150,7 @@ end
 function infect!(par::Parameters, p::Person, time)
     inf = Infection(
         vax_status = vax_status(p),
-        vax_eff_at_inf = is_vaccinated(p) ? current_vax_efficacy(par, p) : -1.0,
+        vax_eff_at_inf = is_vaccinated(p) ? current_true_vax_protection(par, p) : -1.0,
         t_infection = time,
         suscep_at_inf = p.current_suscep
     )
@@ -208,7 +208,7 @@ function init_pop(par::Parameters)
 
         if vs == Vaccinated
             people[i].vax_status = Vaccinated::VaccinationStatus
-            vax = Vaccination(t_vaccination = 0.0, vax_efficacy = par.vax_efficacy)
+            vax = Vaccination(t_vaccination = 0.0, true_vax_protection = par.true_vax_protection)
             push!(people[i].vax_hist, vax)
         end
 
@@ -221,7 +221,7 @@ end
 # Helper function for an individual to become vaccinated
 function become_vaccinated!(par::Parameters, p::Person, time)
     p.vax_status = Vaccinated::VaccinationStatus
-    vax = Vaccination(t_vaccination = time, vax_efficacy = par.vax_efficacy)
+    vax = Vaccination(t_vaccination = time, true_vax_protection = par.true_vax_protection)
     push!(p.vax_hist, vax)
 end
 
@@ -285,7 +285,7 @@ function update_susceptible!(par::Parameters, p::Person, step_tmax::Real)
 
     # calculate force of infection accoutning for susceptibility and any vaccine protection
     foi = p.current_suscep * p.foi
-    foi *= is_vaccinated(p) ? 1 - current_vax_efficacy(par, p) : 1.0
+    foi *= is_vaccinated(p) ? 1 - current_true_vax_protection(par, p) : 1.0
 
     # sample time to next infection based on current force of infection
     tau = p.tnow + sample_exponential(1 / foi)

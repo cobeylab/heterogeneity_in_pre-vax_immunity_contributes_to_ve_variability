@@ -212,7 +212,7 @@ inf_plt <- ggplot(inf_dt) +
 
 print("PLOTTING VE DATA")
 
-true_vax_protection <- as.numeric(pars$vax_efficacy) * 100
+true_vax_protection <- as.numeric(pars$true_vax_protection) * 100
 
 # remove early noisy ve trajectory
 ve_dt <- ve_dt %>%

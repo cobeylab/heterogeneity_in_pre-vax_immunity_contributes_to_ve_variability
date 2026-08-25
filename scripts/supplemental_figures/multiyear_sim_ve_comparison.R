@@ -268,7 +268,7 @@ geom_split_violin <- function(mapping = NULL, data = NULL, stat = "ydensity", po
 print("PLOTTING INFECTION DATA")
 
 tmax <- as.numeric(pars$tmax)
-true_vax_protection <- as.numeric(pars$vax_efficacy) * 100
+true_vax_protection <- as.numeric(pars$true_vax_protection) * 100
 
 inf_plt <- ggplot(inf_dt) +
     geom_rect(

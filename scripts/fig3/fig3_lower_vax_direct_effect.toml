@@ -64,7 +64,7 @@ vax_coverage = 0.5
 pr_vax_to_vax = 0.85
 
 # true vaccine efficacy
-vax_efficacy = 0.3
+true_vax_protection = 0.3
 
 # vaccine-derived immunity waning half life in years
 vax_imm_halflife = 0.0 # 0 corresponds to no waning

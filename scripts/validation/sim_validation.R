@@ -81,7 +81,7 @@ pars <- list(
     end_time = pars$tmax,
     dt = pars$dt,
     lambda = pars$beta,
-    theta_0 = 1 - pars$vax_efficacy,
+    theta_0 = 1 - pars$true_vax_protection,
     epsilon_v = pars$vax_mean_pre_vax_suscep,
     epsilon_u = pars$unvax_mean_pre_vax_suscep,
     alpha_v = pars$vax_pre_vax_suscep_shape,
