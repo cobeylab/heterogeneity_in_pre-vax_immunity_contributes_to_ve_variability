@@ -6,7 +6,7 @@ library(paletteer)
 source(here("src", "full_VE_model.R"))
 source(here("src", "data_generation.R"))
 
-# Scenario options (no waning, no continuous risk distributions, VE from cumulative attack rates)
+# Scenario options (waning vax protection, no continuous risk distributions, VE from cumulative attack rates)
 opts = list(
     waning = TRUE,
     heterogeneity = FALSE,
