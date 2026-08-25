@@ -253,10 +253,17 @@ function current_suscep(par::Parameters, p::Person, time)
         return p.base_suscep
     else
         if has_been_infected(p)
-            # if the individual has been infected before, calculate waned infection immunity
-            t_delta = time - last_recovery_time(p)
-            waning_mult = 1 - exp(-t_delta * (log(2) / par.inf_imm_halflife))
-            return p.base_suscep * waning_mult
+            t_recov = last_recovery_time(p)
+            if t_recov == -1.0
+                # this person is mid-infection, and has susceptibility = 0
+                return zero(p.base_suscep)
+            else
+                # this person is not currently infected but has been previously infected
+                t_delta = time - last_recovery_time(p)
+                # calculate waned infection immunity
+                waning_mult = 1 - exp(-t_delta * (log(2) / par.inf_imm_halflife))
+                return p.base_suscep * waning_mult
+            end
         else
             # otherwise return initial susceptibility
             return p.base_suscep
