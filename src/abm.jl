@@ -62,6 +62,7 @@ function warn_if_invalid(valid, message, value)
     end
 end
 
+# Performs validation of user-defined parameters from the TOML config
 function validate_parameters(par::Parameters)
     checks::Vector{Bool} = []
 
