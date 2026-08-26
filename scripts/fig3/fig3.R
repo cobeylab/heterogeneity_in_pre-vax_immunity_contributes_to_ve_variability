@@ -45,7 +45,13 @@ suscep <- read_csv(suscep_filepath, show_col_types = FALSE)
 
 print("CLEANING INFECTION DATA")
 
-per_1k <- 1e3 / pars$pop_size
+# grab the vaccinated and unvaccinated population sizes for each simualted year
+vax_coverage_by_year <- results %>%
+    mutate(year = ceiling(t)) %>%
+    group_by(year) %>%
+    distinct(vaxd) %>%
+    rename(vaxd_pop_size = vaxd) %>%
+    mutate(unvaxd_pop_size = pars$pop_size - vaxd_pop_size)
 
 # calculate mean daily infections per 10k people by vaccination status
 inf_dt <- results %>%
@@ -54,10 +60,11 @@ inf_dt <- results %>%
         year = ceiling(t),
         time = t - (year - 1)
     ) %>%
+    left_join(vax_coverage_by_year, by = "year") %>%
     group_by(exp, t) %>%
     summarize(
-        v_inf = mean(vax_inf) * per_1k,
-        u_inf = mean(unvax_inf) * per_1k
+        v_inf = mean(vax_inf) / vaxd_pop_size * 1e3,
+        u_inf = mean(unvax_inf) / unvaxd_pop_size * 1e3
     ) %>%
     ungroup() %>%
     pivot_longer(!c(exp, t))
@@ -78,14 +85,6 @@ suscep_dt <- suscep %>%
     ungroup()
 
 print("CLEANING VE DATA")
-
-# grab the vaccinated and unvaccinated population sizes for each simualted year
-vax_coverage_by_year <- results %>%
-    mutate(year = ceiling(t)) %>%
-    group_by(year) %>%
-    distinct(vaxd) %>%
-    rename(vaxd_pop_size = vaxd) %>%
-    mutate(unvaxd_pop_size = pars$pop_size - vaxd_pop_size)
 
 # ve is calculated from time-varying cumulative attack rates each year
 ve_dt <- results %>%
@@ -190,7 +189,7 @@ inf_plt <- ggplot(inf_dt) +
         color = name
     ) + 
     geom_line(linewidth = 1) +
-    coord_cartesian(xlim = c(0, tmax + 0.1), ylim = c(0, 4), expand = FALSE) +
+    coord_cartesian(xlim = c(0, tmax + 0.1), ylim = c(0, 8), expand = FALSE) +
     scale_x_continuous(breaks = seq(0, tmax, 1), labels = seq(0, tmax, 1)) +
     scale_fill_manual(values = c("gray90", "gray60"), guide = "none") +
     scale_color_manual(
