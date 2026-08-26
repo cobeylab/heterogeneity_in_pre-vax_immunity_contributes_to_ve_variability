@@ -102,4 +102,4 @@ The script first runs a validation simulation. To better compare against the ana
 - `(un)vax_mean_pre_vax_suscep`: (un)vaccinated mean pre-vaccination susceptibility
 - `(un)vax_pre_vax_suscep_shape`: (un)vaccinated pre-vaccination susceptibility distribution shape parameter
 
-Command: `cd validation; bash ./sim_validation.sh`
+Command: `cd validation`, `bash ./sim_validation.sh`
