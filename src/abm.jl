@@ -56,6 +56,134 @@ end
     vax_imm_halflife::F           # half life for exponential waning of vaccine immunity
 end
 
+function warn_if_invalid(valid, message, value)
+    if !valid
+        println(message, " (current value: ", value, ")")
+    end
+end
+
+function validate_parameters(par::Parameters)
+    checks::Vector{Bool} = []
+
+    # time step must end in 1 or 5 so that it creates an integral number of steps
+    dt_valid = string(par.dt)[end] == '1' || string(par.dt)[end] == '5'
+    push!(checks, dt_valid)
+    warn_if_invalid(
+        dt_valid,
+        "dt_valid must end in 1 or 5 to create an integral number of steps",
+        par.dt
+    )
+
+    # population must have at least one person
+    pop_size_valid = par.pop_size > 0
+    push!(checks, pop_size_valid)
+    warn_if_invalid(pop_size_valid, "pop_size must be larger than zero", par.pop_size)
+
+    # infection hazards must be zero or postive
+    beta_valid = par.beta >= 0
+    push!(checks, beta_valid)
+    warn_if_invalid(
+        beta_valid,
+        "beta must be larger then or equal to zero",
+        par.beta
+    )
+
+    beta_boosted_valid = par.beta_boosted >= 0
+    push!(checks, beta_boosted_valid)
+    warn_if_invalid(
+        beta_boosted_valid,
+        "beta_boosted must be larger then or equal to zero",
+        par.beta_boosted
+    )
+
+    # seasonal forcing amplitude must be between 0 and 1
+    seasonality_amplitude_valid = par.seasonality_amplifier >= 0.0 && par.seasonality_amplifier <= 1.0
+    push!(checks, seasonality_amplitude_valid)
+    warn_if_invalid(
+        seasonality_amplitude_valid,
+        "seasonality_amplitude must be between 0.0 and 1.0",
+        par.seasonality_amplifier
+    )
+
+    # recovery rate must be greater than zero
+    gamma_valid = par.gamma > 0
+    push!(checks, gamma_valid)
+    warn_if_invalid(gamma_valid, "gamma must be greater than zero", par.gamma)
+
+    # pre-vaccination susceptibility means must be greater than zero
+    vax_mean_pre_vax_suscep_valid = par.vax_mean_pre_vax_suscep > 0
+    push!(checks, vax_mean_pre_vax_suscep_valid)
+    warn_if_invalid(
+        vax_mean_pre_vax_suscep_valid,
+        "vax_mean_pre_vax_suscep must be greater than zero",
+        par.vax_mean_pre_vax_suscep
+    )
+
+    unvax_mean_pre_vax_suscep_valid = par.unvax_mean_pre_vax_suscep > 0
+    push!(checks, unvax_mean_pre_vax_suscep_valid)
+    warn_if_invalid(
+        unvax_mean_pre_vax_suscep_valid,
+        "unvax_mean_pre_vax_suscep must be greater than zero",
+        par.unvax_mean_pre_vax_suscep
+    )
+
+    # pre-vaccination susceptibility distribution shape parameters must be greater than zero
+    vax_pre_vax_suscep_shape_valid = par.vax_pre_vax_suscep_shape >= 0
+    push!(checks, vax_pre_vax_suscep_shape_valid)
+    warn_if_invalid(
+        vax_pre_vax_suscep_shape_valid,
+        "vax_pre_vax_suscep_shape must be greater than or equal to zero",
+        par.vax_pre_vax_suscep_shape
+    )
+
+    unvax_pre_vax_suscep_shape_valid = par.unvax_pre_vax_suscep_shape >= 0
+    push!(checks, unvax_pre_vax_suscep_shape_valid)
+    warn_if_invalid(
+        unvax_pre_vax_suscep_shape_valid,
+        "unvax_pre_vax_suscep_shape must be greater than or equal to zero",
+        par.unvax_pre_vax_suscep_shape
+    )
+
+    # infection-derived immunity waning rate must be greater than zero
+    inf_imm_halflife_valid = par.inf_imm_halflife >= 0
+    push!(checks, inf_imm_halflife_valid)
+    warn_if_invalid(
+        inf_imm_halflife_valid,
+        "inf_imm_halflife must be greater than or equal to zero",
+        par.inf_imm_halflife
+    )
+
+    # vaccination coverage must be between 0.0 and 1.0
+    vax_coverage_valid = par.vax_coverage >= 0.0 && par.vax_coverage <= 1.0
+    push!(checks, vax_coverage_valid)
+    warn_if_invalid(vax_coverage_valid, "vax_coverage must be between 0.0 and 1.0", par.vax_coverage)
+
+    # vaccination status auto-correlation must be between 0.0 and 1.0
+    pr_vax_to_vax_valid = par.pr_vax_to_vax >= 0.0 && par.pr_vax_to_vax <= 1.0
+    push!(checks, pr_vax_to_vax_valid)
+    warn_if_invalid(pr_vax_to_vax_valid, "pr_vax_to_vax must be between 0.0 and 1.0", par.pr_vax_to_vax)
+
+    # true vaccine protection must be between 0.0 and 1.0
+    true_vax_protection_valid = par.true_vax_protection >= 0.0 && par.true_vax_protection <= 1.0
+    push!(checks, true_vax_protection_valid)
+    warn_if_invalid(
+        true_vax_protection_valid,
+        "true_vax_protection must be between 0.0 and 1.0",
+        par.true_vax_protection
+    )
+
+    # vaccine-derived immunity waning rate must be greater than zero
+    vax_imm_halflife_valid = par.vax_imm_halflife >= 0
+    push!(checks, vax_imm_halflife_valid)
+    warn_if_invalid(
+        vax_imm_halflife_valid,
+        "vax_imm_halflife must be greater than or equal to zero",
+        par.vax_imm_halflife
+    )
+
+    return sum(checks) == length(checks)
+end
+
 # Helper function to create parameter object from TOML file
 Parameters(d::Dict{String, Any}) = Parameters(; (Symbol.(keys(d)) .=> values(d))... )
 
@@ -466,6 +594,13 @@ end
 
 # Main simulation function
 function simulate(par::Parameters, rep::Real)
+    # only continue if parameters are valid
+    params_are_valid = validate_parameters(par)
+    if !params_are_valid
+        println("ERROR: parameter validation failed")
+        exit(1)
+    end
+
     # initialize the RNG and time-keeping variables
     Random.seed!(rep)
     tnow = 0.0
