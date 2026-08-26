@@ -100,8 +100,8 @@ pars = list(
     eta = c(30, 180, 360, 1440),
     epsilon_v = seq(0.1, 1.0, 0.1),
     epsilon_u = seq(0.1, 1.0, 0.1),
-    alpha_v = 20,
-    alpha_u = 20,
+    alpha_v = Inf,
+    alpha_u = Inf,
     mu_v = 1,
     mu_u = 1,
     pi_pos = 1,
@@ -112,10 +112,10 @@ pars = list(
 
 pars$time <- pars$end_time
 
-# Scenario options (waning, continuous pre-vaccination risk, VE from cumulative attack rates)
+# Scenario options (waning, point-density pre-vaccination risk, VE from cumulative attack rates)
 opts = list(
     waning = TRUE,
-    heterogeneity = TRUE,
+    heterogeneity = FALSE,
     instantaneous = FALSE
 )
 cumul_ve_opts <- opts
