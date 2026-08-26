@@ -460,7 +460,7 @@ end
 # Calculate seasonally forced infection hazard
 function calculate_beta(par::Parameters, time)
     # decide if this is the time period when the increased hazard is used
-    use_beta_boosted = (time > par.t_boost_transmission) && (time < (par.t_boost_transmission + 1.0))
+    use_beta_boosted = (time >= par.t_boost_transmission) && (time < (par.t_boost_transmission + 1.0))
     beta = use_beta_boosted ? par.beta_boosted : par.beta
 
     # calculate seasonally forced infection hazard
