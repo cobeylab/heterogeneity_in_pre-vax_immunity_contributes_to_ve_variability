@@ -20,3 +20,5 @@
 ### Required Julia libraries
 
 `ArgParse`, `CSV`, `DataFramesMeta`, `Distributions`, `DrWatson`, `Random`, `Reexport`, `TOML`
+
+The julia project can be set up by running `julia --project=. --eval "using Pkg; Pkg.instantiate()"` from the project's root directory.
