@@ -523,10 +523,15 @@ function safe_shrink_and_summarize!(vec, len, fun)
     return length(vec) > 0 ? fun(vec) : -1.0
 end
 
+# Helper function to consistently calculate sim time from the current step and dt size
+function calculate_sim_time(step, dt; n_digits = 5)
+    return round(step * dt; digits = n_digits)
+end
+
 # Helper function to determin if a person was infected in the current time step
 function infected_this_step(p::Person, step, dt)
-    t_min = (step - 1) * dt
-    t_max = step * dt
+    t_min = calculate_sim_time(step - 1, dt)
+    t_max = calculate_sim_time(step, dt)
     return has_been_infected(p) && last_infection_time(p) >= t_min && last_infection_time(p) < t_max
 end
 
@@ -636,7 +641,7 @@ function simulate(par::Parameters, rep::Real)
 
         # step to the next time point
         step += 1
-        tnow = round(par.dt * step, digits = 5)
+        tnow = calculate_sim_time(step, par.dt)
 
         # simulate events that occur this time step for all people
         for p in people
