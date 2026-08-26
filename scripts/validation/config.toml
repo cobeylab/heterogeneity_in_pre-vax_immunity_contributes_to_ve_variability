@@ -14,19 +14,19 @@ save_current_suscep = true
 # number of simulation replicates
 nrep = 1
 
-# simulation max time in years
+# simulation max time in days
 tmax = 200.0
 
 # time when increased transmission occurs
 t_boost_transmission = 201.0
 
-# simulated time step size in years
+# simulated time step size in days
 dt = 0.05
 
 # synthetic population size
 pop_size = 100000
 
-# average infection hazard for normal years
+# average infection hazard for normal days
 beta = 0.005
 
 # boosted infection hazard for larger-than-normal epidemic
@@ -54,7 +54,7 @@ unvax_pre_vax_suscep_shape = 20.0
 # allow for re-infections
 allow_reinf = false
 
-# infection-derived immunity waning half life in years
+# infection-derived immunity waning half life
 inf_imm_halflife = 4.0
 
 # vaccination coverage
@@ -66,11 +66,11 @@ pr_vax_to_vax = 0.85
 # true vaccine efficacy
 true_vax_protection = 0.5
 
-# vaccine-derived immunity waning half life in years
+# vaccine-derived immunity waning half life
 vax_imm_halflife = 0.0 # 0 corresponds to no waning
 
 # checkpoints to vaccinate population
-# 1 corresponds to vaccination at the start of each year
+# 0.0 corresponds to no re-vaccination
 vaccination_checkpoint = 0.0
 
 # time point when vaccination starts
