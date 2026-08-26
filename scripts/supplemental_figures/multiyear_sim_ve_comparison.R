@@ -78,7 +78,6 @@ per_1k <- 1e3 / pars$pop_size
 
 # gather test-positive and test-negative infections and adjust per 10k people
 inf_dt <- results %>%
-    filter(t > 0.005) %>%
     mutate(
         step = t / pars$dt,
         year = ceiling(t),

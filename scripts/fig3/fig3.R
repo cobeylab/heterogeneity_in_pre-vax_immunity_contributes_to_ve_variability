@@ -49,7 +49,6 @@ per_1k <- 1e3 / pars$pop_size
 
 # calculate mean daily infections per 10k people by vaccination status
 inf_dt <- results %>%
-    filter(t > 0.005) %>%
     mutate(
         step = t / pars$dt,
         year = ceiling(t),
