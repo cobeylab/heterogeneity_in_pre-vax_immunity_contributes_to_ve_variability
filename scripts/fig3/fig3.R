@@ -80,6 +80,14 @@ suscep_dt <- suscep %>%
 
 print("CLEANING VE DATA")
 
+# grab the vaccinated and unvaccinated population sizes for each simualted year
+vax_coverage_by_year <- results %>%
+    mutate(year = ceiling(t)) %>%
+    group_by(year) %>%
+    distinct(vaxd) %>%
+    rename(vaxd_pop_size = vaxd) %>%
+    mutate(unvaxd_pop_size = pars$pop_size - vaxd_pop_size)
+
 # ve is calculated from time-varying cumulative attack rates each year
 ve_dt <- results %>%
     mutate(
@@ -94,13 +102,10 @@ ve_dt <- results %>%
     ) %>%
     ungroup() %>%
     select(exp, rep, year, time, cumul_unvax_inf, cumul_vax_inf) %>%
-    left_join(
-        select(experiments, all_of(c("exp_idx", "pop_size", "vax_coverage"))),
-        by = join_by(exp == exp_idx)
-    ) %>%
+    left_join(vax_coverage_by_year, by = "year") %>%
     mutate(
-        cumul_vax_inf = cumul_vax_inf / (vax_coverage * pop_size),
-        cumul_unvax_inf = cumul_unvax_inf / ((1 - vax_coverage) * pop_size),
+        cumul_vax_inf = cumul_vax_inf / vaxd_pop_size,
+        cumul_unvax_inf = cumul_unvax_inf / unvaxd_pop_size,
         estd_ve = (1 - (cumul_vax_inf / cumul_unvax_inf)) * 100
     )
 

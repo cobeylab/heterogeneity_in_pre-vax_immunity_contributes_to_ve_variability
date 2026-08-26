@@ -158,6 +158,8 @@ print("CALCULATING VE ESTIMATES")
 
 # estimate annual VE estimates and calculate average absolute difference between
 # regression-based VE and VE from cumulative attack rates
+# we aproximate the population size using the sampling proportion and estimate
+# vaccinated and unvaccinated population sizes using the vax_coverage parameter
 sample_tot_pop_size <- pars$pop_size * sample_prop
 
 final_ve_dt <- linelist %>%
