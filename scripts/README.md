@@ -6,7 +6,7 @@ Holds scripts used to generate main-text and supplementary figures. All example 
 
 ### Figure 1: VE vs. differential mean pre-vaccination infection risk
 
-Command: `Rscript fig1/fig1.R `
+Command: `Rscript fig1/fig1.R`
 
 ### Figure 2: VE vs. differential heterogeneity in pre-vaccination infection risk
 
@@ -16,7 +16,7 @@ Command: `Rscript fig2/fig2.R`
 
 Commands: `cd fig3`, `bash ./fig3.sh fig3.toml`
 
-The single simulation uses one core and about 4.5GB of memory. The simulation and figure generation takes approximately 40 minutes to finish (on AMD Ryzen 5 PRO 6650U). The helper bash script explicitly cleans up the temporary simulation data directory, which involves a recursive `rm`. If you have edited the `sim_dir` path in the TOML config file, you may not want this behavior.
+The single simulation uses one core and about 4.5GB of memory. The simulation and figure generation takes approximately 70 minutes to finish (on AMD Ryzen 5 PRO 6650U). The helper bash script explicitly cleans up the temporary simulation data directory, which involves a recursive `rm`. If you have edited the `sim_dir` path in the TOML config file, you may not want this behavior.
 
 ## Supplemental figures
 
@@ -49,12 +49,6 @@ Command: `Rscript supplemental_figures/final_ve_sensitivity_to_vax_waning_rate.R
 Heatmap showing different VE outcomes across scenarios involving starting true vaccine protection, vaccine protection waning rate, and mean pre-vaccination infection risk.
 
 Command: `Rscript supplemental_figures/final_ve_sensitivity_to_waning_and_pre-vax_means.R`
-
-### `lewnard_et_al_2018_fig_1c_recreation.R`
-
-Recreation of Fig. 1C from Lewnard et al. 2018, which shows that susceptible depletion's effect on VE is highest at intermediate levels of true vaccine protection.
-
-Command: `Rscript supplemental_figures/lewnard_et_al_2018_fig_1c_recreation.R`
 
 ### `multiyear_sim_ve_comparison.R`
 
