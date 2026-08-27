@@ -64,8 +64,8 @@ lewnard_plt <- ggplot(lewnard_dt) +
     ) +
     annotate(
         "label",
-        x = 82.5,
-        y = 10,
+        x = 80,
+        y = 15,
         label = "Largest distance between VE\nand true protection occurs at\n58% true vaccine protection",
         color = "maroon",
         size = 3
