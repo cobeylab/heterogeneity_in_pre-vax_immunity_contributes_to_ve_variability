@@ -32,7 +32,7 @@ insnt_ve_opts$instantaneous <- TRUE
 # Parameters to draw final VE curves
 pars = list(
     start_time = 0,
-    end_time = 200,
+    end_time = 196,
     dt = 14,
     lambda = 0.0015,
     lambda_negative = 0.0045,

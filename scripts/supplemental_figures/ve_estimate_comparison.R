@@ -12,7 +12,7 @@ set.seed(0)
 # Scenario parameters
 pars = list(
     start_time = 0,
-    end_time = 200,
+    end_time = 196,
     dt = 14,
     lambda = 0.005,
     lambda_negative = 0.015,
@@ -92,7 +92,7 @@ set.seed(0)
 # Scenario parameters
 pars = list(
     start_time = 0,
-    end_time = 200,
+    end_time = 196,
     dt = 14,
     lambda = 0.005,
     lambda_negative = 0.015,
