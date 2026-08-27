@@ -75,6 +75,8 @@ unvax_test_neg_infections <- function(time, beta, pars, shift = 0.5) {
 print("CLEANING INFECTION DATA AND ESTIMATING TEST-NEG INFECTIONS")
 
 per_1k <- 1e3 / pars$pop_size
+per_1k_vax <- 1e3 / (pars$pop_size * pars$vax_coverage)
+per_1k_unvax <- 1e3 / (pars$pop_size * (1 - pars$vax_coverage))
 
 # gather test-positive and test-negative infections and adjust per 10k people
 inf_dt <- results %>%
@@ -85,21 +87,20 @@ inf_dt <- results %>%
     ) %>%
     group_by(exp, t) %>%
     mutate(
-        v_tp_inf = mean(vax_inf) * per_1k,
-        u_tp_inf = mean(unvax_inf) * per_1k,
-        v_tn_inf = vax_test_neg_infections(t, beta_test_neg, pars) * per_1k,
-        u_tn_inf = unvax_test_neg_infections(t, beta_test_neg, pars) * per_1k
+        v_tp_inf = mean(vax_inf) * per_1k_vax,
+        u_tp_inf = mean(unvax_inf) * per_1k_unvax,
+        v_tn_inf = vax_test_neg_infections(t, beta_test_neg, pars) * per_1k_vax,
+        u_tn_inf = unvax_test_neg_infections(t, beta_test_neg, pars) * per_1k_unvax
     ) %>%
     ungroup() %>%
     select(exp, t, year, ends_with("_tp_inf"), ends_with("_tn_inf")) %>%
-    pivot_longer(!c(exp, t, year), values_to = "per_1k_inc") %>%
-    mutate(count = round(per_1k_inc / per_1k))
+    pivot_longer(!c(exp, t, year), values_to = "per_1k_inc")
 
 # generate linelists from the counts of cases and controls
 vax_tp_linelist <- inf_dt %>%
     filter(name == "v_tp_inf") %>%
     mutate(
-        count = round(per_1k_inc / per_1k),
+        count = round(per_1k_inc / per_1k_vax),
         vax = 1,
         inf = 1
     ) %>%
@@ -109,7 +110,7 @@ vax_tp_linelist <- inf_dt %>%
 vax_tn_linelist <- inf_dt %>%
     filter(name == "v_tn_inf") %>%
     mutate(
-        count = round(per_1k_inc / per_1k),
+        count = round(per_1k_inc / per_1k_vax),
         vax = 1,
         inf = 0
     ) %>%
@@ -119,7 +120,7 @@ vax_tn_linelist <- inf_dt %>%
 unvax_tp_linelist <- inf_dt %>%
     filter(name == "u_tp_inf") %>%
     mutate(
-        count = round(per_1k_inc / per_1k),
+        count = round(per_1k_inc / per_1k_unvax),
         vax = 0,
         inf = 1
     ) %>%
@@ -129,7 +130,7 @@ unvax_tp_linelist <- inf_dt %>%
 unvax_tn_linelist <- inf_dt %>%
     filter(name == "u_tn_inf") %>%
     mutate(
-        count = round(per_1k_inc / per_1k),
+        count = round(per_1k_inc / per_1k_unvax),
         vax = 0,
         inf = 0
     ) %>%
@@ -285,7 +286,7 @@ inf_plt <- ggplot(inf_dt) +
         linetype = name
     ) + 
     geom_line(linewidth = 1) +
-    coord_cartesian(xlim = c(0, tmax + 0.1), ylim = c(0, 4), expand = FALSE) +
+    coord_cartesian(xlim = c(0, tmax + 0.1), ylim = c(0, 8), expand = FALSE) +
     scale_x_continuous(breaks = seq(0, tmax, 1), labels = seq(0, tmax, 1)) +
     scale_fill_manual(values = c("gray90", "gray60"), guide = "none") +
     scale_color_manual(
