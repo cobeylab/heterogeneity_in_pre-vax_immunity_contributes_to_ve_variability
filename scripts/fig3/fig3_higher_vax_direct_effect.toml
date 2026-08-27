@@ -11,67 +11,67 @@ sim_dir = "default"
 save_linelist = false
 save_current_suscep = true
 
-# number of simulation replicates
+# number of simulation replicates (must be integer without decimal)
 nrep = 1
 
-# simulation max time in years
+# simulation max time in years (must be float with decimal)
 tmax = 10.0
 
-# time when increased transmission occurs
+# time when increased transmission occurs (must be float with decimal)
 t_boost_transmission = 3.0
 
-# simulated time step size in years
+# simulated time step size in years (must be float with decimal)
 dt = 0.005
 
-# synthetic population size
+# synthetic population size (must be integer without decimal)
 pop_size = 5000000
 
-# average infection hazard for normal years
+# average infection hazard for normal years (must be float with decimal)
 beta = 1.0
 
-# boosted infection hazard for larger-than-normal epidemic
+# boosted infection hazard for larger-than-normal epidemic (must be float with decimal)
 beta_boosted = 4.0
 
-# seasonal forcing amplitude multiplier
+# seasonal forcing amplitude multiplier (must be float with decimal)
 seasonality_amplifier = 1.0
 
-# seasonal forcing shift
+# seasonal forcing shift (must be float with decimal)
 seasonality_shift = 0.5
 
-# 1 / average infection duration
+# 1 / average infection duration (must be float with decimal)
 # with a high rate, people spend almost no time in the infected state
 # this allows only the waning susceptibility to control how long until re-infections occur
 gamma = 1e5
 
-# average baseline susceptibility
+# average baseline susceptibility (must be float with decimal)
 vax_mean_pre_vax_suscep = 1.0
 unvax_mean_pre_vax_suscep = 1.0
 
-# shape parameter for susceptibility gamma distribution
+# shape parameter for susceptibility gamma distribution (must be float with decimal)
 vax_pre_vax_suscep_shape = 10.0
 unvax_pre_vax_suscep_shape = 1.0
 
 # allow for re-infections
 allow_reinf = true
 
-# infection-derived immunity waning half life in years
+# infection-derived immunity waning half life in years (must be float with decimal)
 inf_imm_halflife = 4.0
 
-# vaccination coverage
+# vaccination coverage (must be float with decimal)
 vax_coverage = 0.5
 
-# vaccination auto-correlation (prob being re-vaccinated)
+# vaccination auto-correlation, or the prob being re-vaccinated (must be float with decimal)
 pr_vax_to_vax = 0.85
 
-# true vaccine efficacy
+# true vaccine efficacy (must be float with decimal)
 true_vax_protection = 0.9
 
-# vaccine-derived immunity waning half life in years
+# vaccine-derived immunity waning half life in years (must be float with decimal)
 vax_imm_halflife = 0.0 # 0 corresponds to no waning
 
-# checkpoints to vaccinate population
+# checkpoints to vaccinate population (must be float with decimal)
 # 1 corresponds to vaccination at the start of each year
 vaccination_checkpoint = 1.0
 
-# time point when vaccination starts
+# time point when vaccination starts (must be float with decimal)
 t_vax_start = 0.0
