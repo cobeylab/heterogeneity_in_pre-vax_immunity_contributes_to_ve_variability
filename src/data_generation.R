@@ -71,7 +71,7 @@ ve_from_logreg <- function(coef) {
 
 # Calculate VE using unconditional logistic regression adjusting for time.
 estimate_ve_uncond_logreg <- function(data) {
-    reg <- glm(inf ~ vax + block, data = data, family = binomial)
+    reg <- glm(inf ~ vax + factor(block), data = data, family = binomial)
     return(ve_from_logreg(reg$coefficients["vax"]))
 }
 
