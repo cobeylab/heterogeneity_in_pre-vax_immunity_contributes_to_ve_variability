@@ -52,7 +52,7 @@ end
     vaccination_checkpoint::F     # time point when re-vaccination occurs
     t_vax_start::F                # time when vaccination first occurs
 
-    true_vax_protection::F               # true vaccine protection
+    true_vax_protection::F        # true vaccine protection
     vax_imm_halflife::F           # half life for exponential waning of vaccine immunity
 end
 
