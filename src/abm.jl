@@ -160,9 +160,9 @@ function validate_parameters(par::Parameters)
     warn_if_invalid(vax_coverage_valid, "vax_coverage must be between 0.0 and 1.0", par.vax_coverage)
 
     # vaccination status auto-correlation must be between 0.0 and 1.0
-    pr_vax_to_vax_valid = par.pr_vax_to_vax >= 0.0 && par.pr_vax_to_vax <= 1.0
+    pr_vax_to_vax_valid = par.pr_vax_to_vax >= (2.0 - (1.0 / par.vax_coverage)) && par.pr_vax_to_vax <= 1.0
     push!(checks, pr_vax_to_vax_valid)
-    warn_if_invalid(pr_vax_to_vax_valid, "pr_vax_to_vax must be between 0.0 and 1.0", par.pr_vax_to_vax)
+    warn_if_invalid(pr_vax_to_vax_valid, "pr_vax_to_vax must be between (2 - (1/vax coverage)) and 1.0", par.pr_vax_to_vax)
 
     # true vaccine protection must be between 0.0 and 1.0
     true_vax_protection_valid = par.true_vax_protection >= 0.0 && par.true_vax_protection <= 1.0
