@@ -4,7 +4,9 @@ Holds scripts used to generate main-text and supplementary figures. All example 
 
 ## Generate all figures without running simulation model
 
-Running the helper script will create all main-text and supplemental figures. Figures that rely on simulated data instead are generated using data from example simulations (see `fig3/smaller_pop_size` for config files). The example simulations are idential to the full simulations except that the population size is reduced from 5 million to 100,000 individuals, allowing the simulated data to be saved to GitHub and included in clones. This permits users to re-create figures without needed to setup `julia` and run three 1-hour long simulations. The example simulation figures are more noisy than the manuscript versions, but the general results are similar.
+Running the helper script will create all main-text and supplemental figures. Figures that rely on simulated data instead are generated using data from example simulations (see `fig3/smaller_pop_size` for config files). The example simulations are idential to the full simulations except that the population size is reduced from 5 million to 100,000 individuals, allowing the simulated data to be saved to GitHub and included in clones. This permits users to re-create figures without needed to setup `julia` and run three 1-hour long simulations. The example simulation figures are more noisy than the manuscript versions, but the general results are similar. Figures 1 and 2 are stored in `plots/`, and all other plots (including all example simulation figures) are stored in `plots/supplemental_figs`. Re-generating all results takes about 20 minutes and requires approximately 1--2 GB of memory (the majority of the time and memoryis needed for the main VE estimate comparison script).
+
+Command: `bash ./generate_example_results.sh`
 
 ---
 
