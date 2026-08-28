@@ -1,0 +1,2 @@
+allow_reinf,beta,beta_boosted,dt,exp_idx,exp_name,gamma,inf_imm_halflife,nrep,pop_size,pr_vax_to_vax,save_current_suscep,save_linelist,seasonality_amplifier,seasonality_shift,sim_dir,t_boost_transmission,t_vax_start,tmax,tmp_dir,true_vax_protection,unvax_mean_pre_vax_suscep,unvax_pre_vax_suscep_shape,vaccination_checkpoint,vax_coverage,vax_imm_halflife,vax_mean_pre_vax_suscep,vax_pre_vax_suscep_shape
+true,1.0,4.0,0.005,1,example_fig3,100000.0,4.0,1,100000,0.85,true,false,1.0,0.5,default,3.0,0.0,10.0,default,0.6,1.0,1.0,1.0,0.5,0.0,1.0,10.0

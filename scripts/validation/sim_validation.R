@@ -57,13 +57,16 @@ sim_dt <- results %>%
     mutate(
         v_cumul_inc = cumsum(v_inc),
         u_cumul_inc = cumsum(u_inc),
-        v_car = v_cumul_inc / vaxd,
-        u_car = u_cumul_inc / (pars$pop_size - vaxd),
+        v_car = (v_cumul_inc / vaxd) * 100,
+        u_car = (u_cumul_inc / (pars$pop_size - vaxd)) * 100,
         ve_cumul = (1 - (v_car / u_car)) * 100
     ) %>%
     select(time = t, ends_with("car"), ve_cumul) %>%
     pivot_longer(!time) %>%
     mutate(data = "sim")
+
+# read in simulation data
+print("ESTIMATING VE FROM ANALYTICAL MODELS")
 
 # Scenario options (no waning, continuous risk distributions, VE from cumulative attack rates)
 opts = list(
@@ -78,7 +81,7 @@ pars <- list(
     end_time = pars$tmax,
     dt = pars$dt,
     lambda = pars$beta,
-    theta_0 = 1 - pars$vax_efficacy,
+    theta_0 = 1 - pars$true_vax_protection,
     epsilon_v = pars$vax_mean_pre_vax_suscep,
     epsilon_u = pars$unvax_mean_pre_vax_suscep,
     alpha_v = pars$vax_pre_vax_suscep_shape,
@@ -91,8 +94,8 @@ math_dt <- generate_par_sets(pars, include_early = FALSE) %>%
     nest(pars = -group_cols()) %>%
     ungroup() %>%
     mutate(
-        v_car = map_vec(pars, function(x) cumulative_attack_rate(x$time, x, opts, TRUE)),
-        u_car = map_vec(pars, function(x) cumulative_attack_rate(x$time, x, opts, FALSE)),
+        v_car = map_vec(pars, function(x) cumulative_attack_rate(x$time, x, opts, TRUE) * 100),
+        u_car = map_vec(pars, function(x) cumulative_attack_rate(x$time, x, opts, FALSE) * 100),
         ve_cumul = map_vec(pars, function(x) estimate_math_ve(x, opts))
     ) %>%
     unnest(pars) %>%
@@ -100,10 +103,60 @@ math_dt <- generate_par_sets(pars, include_early = FALSE) %>%
     pivot_longer(!time) %>%
     mutate(data = "math")
 
-bind_rows(sim_dt, math_dt) %>%
+# read in simulation data
+print("SAVING PLOT")
+
+name_labs <- c(
+    "u_car" = "Unvaccinated cumulative\nattack rate",
+    "v_car" = "Vaccinated cumulative\nattack rate",
+    "ve_cumul" = "Cumulative-attack-rate\nVE estimate"
+)
+
+plt <- bind_rows(sim_dt, math_dt) %>%
     ggplot() +
-        aes(x = time, y = value, color = data) +
-        geom_line() +
-        facet_wrap(vars(name), scales = "free") +
-        theme_cowplot() +
-        background_grid()
+        aes(x = time, y = value, color = data, linetype = data) +
+        geom_line(linewidth = 2) +
+        facet_wrap(
+            vars(name),
+            labeller = labeller(
+                name = name_labs
+            )
+        ) +
+        scale_linetype_manual(
+            name = "Data source",
+            breaks = c("math", "sim"),
+            values = c("solid", "22"),
+            labels = c("Analytical model", "Simulation model")
+        ) +
+        scale_color_manual(
+            name = "Data source",
+            breaks = c("math", "sim"),
+            values = c("dodgerblue", "darkorange"),
+            labels = c("Analytical model", "Simulation model")
+        ) +
+        coord_cartesian(ylim = c(NA, 100)) +
+        theme_cowplot(20) +
+        theme(legend.position = "top") +
+        background_grid() +
+        labs(x = "Time (days)", y = "Value (%)")
+
+fig_dir <- here("plots", "supplemental_figs")
+dir.create(fig_dir)
+
+ggsave(
+    here(fig_dir, "sim_validation.png"),
+    plt,
+    width = 15,
+    height = 5,
+    units = "in",
+    bg = "white"
+)
+
+ggsave(
+    here(fig_dir, "sim_validation.pdf"),
+    plt,
+    width = 15,
+    height = 5,
+    units = "in",
+    bg = "white"
+)

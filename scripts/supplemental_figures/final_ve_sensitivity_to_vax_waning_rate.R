@@ -11,7 +11,7 @@ clean_label <- function(x, sigdig) {
   return(ifelse(abs(x) < 1e-7, 0, signif(x, digits = sigdig)))
 }
 
-# Scenario options (no waning, no continuous risk distributions, VE from cumulative attack rates)
+# Scenario options (waning vax protection, no continuous risk distributions, VE from cumulative attack rates)
 opts = list(
     waning = TRUE,
     heterogeneity = FALSE,

@@ -1,3 +1,7 @@
 *.pdf
 *.png
 *.csv
+
+# include example simulation data
+!data/example_*/*
+!data/example_*/suscep/*

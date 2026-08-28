@@ -2,11 +2,19 @@ Holds scripts used to generate main-text and supplementary figures. All example 
 
 ---
 
+## Generate all figures without running simulation model
+
+Running the helper script will create all main-text and supplemental figures. Figures that rely on simulated data instead are generated using data from example simulations (see `fig3/smaller_pop_size` for config files). The example simulations are idential to the full simulations except that the population size is reduced from 5 million to 100,000 individuals, allowing the simulated data to be saved to GitHub and included in clones. This permits users to re-create figures without needed to setup `julia` and run three 1-hour long simulations. The example simulation figures are more noisy than the manuscript versions, but the general results are similar. Figures 1 and 2 are stored in `plots/`, and all other plots (including all example simulation figures) are stored in `plots/supplemental_figs`. Re-generating all results takes about 20 minutes and requires approximately 1--2 GB of memory (the majority of the time and memoryis needed for the main VE estimate comparison script).
+
+Command: `bash ./generate_example_results.sh`
+
+---
+
 ## Main text figures
 
 ### Figure 1: VE vs. differential mean pre-vaccination infection risk
 
-Command: `Rscript fig1/fig1.R `
+Command: `Rscript fig1/fig1.R`
 
 ### Figure 2: VE vs. differential heterogeneity in pre-vaccination infection risk
 
@@ -14,9 +22,9 @@ Command: `Rscript fig2/fig2.R`
 
 ### Figure 3: Dynmaic population immunity affects pre-vaccination risk and annual VE
 
-Commands: `cd fig3`, `bash ./fig3.sh`
+Commands: `cd fig3`, `bash ./fig3.sh fig3.toml`
 
-Note: The single simulation uses one core and about 4.5GB of memory. The simulation and figure generation takes approximately 40 minutes to finish (on AMD Ryzen 5 PRO 6650U).
+The single simulation uses one core and about 4.5GB of memory. The simulation and figure generation takes approximately 70 minutes to finish (on AMD Ryzen 5 PRO 6650U). The helper bash script explicitly cleans up the temporary simulation data directory, which involves a recursive `rm`. If you have edited the `sim_dir` path in the TOML config file, you may not want this behavior.
 
 ## Supplemental figures
 
@@ -50,12 +58,6 @@ Heatmap showing different VE outcomes across scenarios involving starting true v
 
 Command: `Rscript supplemental_figures/final_ve_sensitivity_to_waning_and_pre-vax_means.R`
 
-### `lewnard_et_al_2018_fig_1c_recreation.R`
-
-Recreation of Fig. 1C from Lewnard et al. 2018, which shows that susceptible depletion's effect on VE is highest at intermediate levels of true vaccine protection.
-
-Command: `Rscript supplemental_figures/lewnard_et_al_2018_fig_1c_recreation.R`
-
 ### `multiyear_sim_ve_comparison.R`
 
 Calculates test-negative control infections and compares final annual VE across the different estimation methods considered (cumulative, instantaneous, regression-based, and cohort). Re-creates version of Figure 3 to compare VE estimates.
@@ -76,7 +78,7 @@ Command: `Rscript supplemental_figures/starting_ve_sensitivity_to_pre-vax_means.
 
 ### `ve_estimate_comparison.R`
 
-Compares VE estimates across scenarios with varying pre-vaccination susceptibility means, vaccine protection waning rate, and true vaccine protection.
+Compares VE estimates across scenarios with varying pre-vaccination susceptibility means, vaccine protection waning rate, and true vaccine protection. This script does not generate a figure, but instead only outputs information to the console.
 
 Command: `Rscript supplemental_figures/ve_estimate_comparison.R`
 
@@ -85,3 +87,28 @@ Command: `Rscript supplemental_figures/ve_estimate_comparison.R`
 Figure showing how differential mean pre-vaccination risk and waning vaccine protection can result in VE crossing zero.
 
 Command: `Rscript supplemental_figures/ve_with_waning_vax_protection_sensitivity_to_pre-vax_means.R`
+
+### Fig. 3 with higher or lower true vaccine protection
+
+Re-runs the simulation model with idential parameters as in `fig3/fig3.toml` except with higher (90%) or lower (30%) true vaccine protection.
+
+Commands: `cd fig3`, `bash ./fig3.sh fig3_higher_vax_direct_effect.toml`
+Commands: `cd fig3`, `bash ./fig3.sh fig3_lower_vax_direct_effect.toml`
+
+## Validation
+
+### Validation of codebase against main-text equations 1a,b,c
+
+The `validation.R` script re-implements main-text equations for instantaneous, cumulative, and cohort VE estimates. It then compares the VE estimates generated from the code in `src` against the re-implemented analytical estimates. The scripts counts the number of times the re-implemented and codebase-derived VE estimates differ by more than 1e-10. VE estimates are compared across 24,300 parameter combinations (varying the exogenous infection hazard, true vaccine protection, and pre-vaccination susceptibility distribution means and variances).
+
+Command: `Rscript validation/validation.R`
+
+### Validation of simulation model against analytical model
+
+The script first runs a validation simulation. To better compare against the analytical cumulative-attack-rate-derived VE estimate, the validation simulation runs for 200 days, has a constant exogenous infection hazard, and has no waning infection-derived immunity (i.e., infected individuals cannot be re-infected). A figure is saved to `plots/supplemental_figs` comparing the simulated cumulative attack rates and VE estimate against the analytical expectation. The default validation scenario is one where the vaccinated and unvaccinated pre-vaccination susceptibility distributions have identical means (1) and shape parameters (20). You can alter the validation scenario in `validation/config.toml`. The parameters you can might alter are:
+
+- `beta`: the exogenous infection hazard
+- `(un)vax_mean_pre_vax_suscep`: (un)vaccinated mean pre-vaccination susceptibility
+- `(un)vax_pre_vax_suscep_shape`: (un)vaccinated pre-vaccination susceptibility distribution shape parameter
+
+Command: `cd validation`, `bash ./sim_validation.sh`

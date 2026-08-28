@@ -1,17 +1,9 @@
 library(here)
 library(tidyverse)
 library(survival)
-library(cowplot)
-library(paletteer)
 
 source(here("src", "full_VE_model.R"))
 source(here("src", "data_generation.R"))
-
-facet_labels = c(
-    insnt_ve = "VE instantaneous",
-    ulreg_ve = "VE unconditional",
-    clreg_ve = "VE conditional"
-)
 
 ### Final ve sweeping across mean pre-vaccination risk and true vaccine protection (NO WANING)
 
@@ -20,7 +12,7 @@ set.seed(0)
 # Scenario parameters
 pars = list(
     start_time = 0,
-    end_time = 200,
+    end_time = 196,
     dt = 14,
     lambda = 0.005,
     lambda_negative = 0.015,
@@ -83,10 +75,10 @@ no_waning_ve_compare <- final_ve_dt %>%
     summarize(
         mean_diff = mean(ve_diff, na.rm = TRUE),
         lower_diff = quantile(ve_diff, probs = c(0.025), na.rm = TRUE),
-        upper_diff = quantile(ve_diff, probs = c(0.925), na.rm = TRUE)
+        upper_diff = quantile(ve_diff, probs = c(0.975), na.rm = TRUE)
     )
 
-print("Mean and 95% IQR of difference between VE estimates and VE^cumulative")
+print("Mean and 95% interval of difference between VE estimates and VE^cumulative")
 print("Scenarios: varying true vax protection and pre-vax risk means")
 print(no_waning_ve_compare)
 
@@ -100,7 +92,7 @@ set.seed(0)
 # Scenario parameters
 pars = list(
     start_time = 0,
-    end_time = 200,
+    end_time = 196,
     dt = 14,
     lambda = 0.005,
     lambda_negative = 0.015,
@@ -108,8 +100,8 @@ pars = list(
     eta = c(30, 180, 360, 1440),
     epsilon_v = seq(0.1, 1.0, 0.1),
     epsilon_u = seq(0.1, 1.0, 0.1),
-    alpha_v = 20,
-    alpha_u = 20,
+    alpha_v = Inf,
+    alpha_u = Inf,
     mu_v = 1,
     mu_u = 1,
     pi_pos = 1,
@@ -120,10 +112,10 @@ pars = list(
 
 pars$time <- pars$end_time
 
-# Scenario options (waning, continuous pre-vaccination risk, VE from cumulative attack rates)
+# Scenario options (waning, point-density pre-vaccination risk, VE from cumulative attack rates)
 opts = list(
     waning = TRUE,
-    heterogeneity = TRUE,
+    heterogeneity = FALSE,
     instantaneous = FALSE
 )
 cumul_ve_opts <- opts
@@ -164,9 +156,9 @@ waning_ve_compare <- final_ve_dt %>%
     summarize(
         mean_diff = mean(ve_diff, na.rm = TRUE),
         lower_diff = quantile(ve_diff, probs = c(0.025), na.rm = TRUE),
-        upper_diff = quantile(ve_diff, probs = c(0.925), na.rm = TRUE)
+        upper_diff = quantile(ve_diff, probs = c(0.975), na.rm = TRUE)
     )
 
-print("Mean and 95% IQR of difference between VE estimates and VE^cumulative")
+print("Mean and 95% interval of difference between VE estimates and VE^cumulative")
 print("Scenarios: varying true vax protection, pre-vax risk means and vax waning")
 print(waning_ve_compare)

@@ -5,6 +5,8 @@ library(RcppTOML)
 library(cowplot)
 library(paletteer)
 
+set.seed(0)
+
 # parse command line arguments
 if (interactive()) {
     parser <- OptionParser()
@@ -43,20 +45,26 @@ suscep <- read_csv(suscep_filepath, show_col_types = FALSE)
 
 print("CLEANING INFECTION DATA")
 
-per_10k <- 1e3 / pars$pop_size
+# grab the vaccinated and unvaccinated population sizes for each simualted year
+vax_coverage_by_year <- results %>%
+    mutate(year = ceiling(t)) %>%
+    group_by(year) %>%
+    distinct(vaxd) %>%
+    rename(vaxd_pop_size = vaxd) %>%
+    mutate(unvaxd_pop_size = pars$pop_size - vaxd_pop_size)
 
 # calculate mean daily infections per 10k people by vaccination status
 inf_dt <- results %>%
-    filter(t > 0.005) %>%
     mutate(
         step = t / pars$dt,
         year = ceiling(t),
         time = t - (year - 1)
     ) %>%
+    left_join(vax_coverage_by_year, by = "year") %>%
     group_by(exp, t) %>%
     summarize(
-        v_inf = mean(vax_inf) * per_10k,
-        u_inf = mean(unvax_inf) * per_10k
+        v_inf = mean(vax_inf) / vaxd_pop_size * 1e3,
+        u_inf = mean(unvax_inf) / unvaxd_pop_size * 1e3
     ) %>%
     ungroup() %>%
     pivot_longer(!c(exp, t))
@@ -92,13 +100,10 @@ ve_dt <- results %>%
     ) %>%
     ungroup() %>%
     select(exp, rep, year, time, cumul_unvax_inf, cumul_vax_inf) %>%
-    left_join(
-        select(experiments, all_of(c("exp_idx", "pop_size", "vax_coverage"))),
-        by = join_by(exp == exp_idx)
-    ) %>%
+    left_join(vax_coverage_by_year, by = "year") %>%
     mutate(
-        cumul_vax_inf = cumul_vax_inf / (vax_coverage * pop_size),
-        cumul_unvax_inf = cumul_unvax_inf / ((1 - vax_coverage) * pop_size),
+        cumul_vax_inf = cumul_vax_inf / vaxd_pop_size,
+        cumul_unvax_inf = cumul_unvax_inf / unvaxd_pop_size,
         estd_ve = (1 - (cumul_vax_inf / cumul_unvax_inf)) * 100
     )
 
@@ -139,7 +144,7 @@ GeomSplitViolin <- ggproto("GeomSplitViolin", GeomViolin,
                            draw_group = function(self, data, ..., draw_quantiles = NULL) {
     data <- transform(data, xminv = x - violinwidth * (x - xmin), xmaxv = x + violinwidth * (xmax - x))
     grp <- data[1, "group"]
-    newdata <- plyr::arrange(transform(data, x = if (grp %% 2 == 1) xminv else xmaxv), if (grp %% 2 == 1) y else -y)
+    newdata <- dplyr::arrange(transform(data, x = if (grp %% 2 == 1) xminv else xmaxv), if (grp %% 2 == 1) y else -y)
     newdata <- rbind(newdata[1, ], newdata, newdata[nrow(newdata), ], newdata[1, ])
     newdata[c(1, nrow(newdata) - 1, nrow(newdata)), "x"] <- round(newdata[1, "x"])
 
@@ -184,7 +189,7 @@ inf_plt <- ggplot(inf_dt) +
         color = name
     ) + 
     geom_line(linewidth = 1) +
-    coord_cartesian(xlim = c(0, tmax + 0.1), ylim = c(0, 4), expand = FALSE) +
+    coord_cartesian(xlim = c(0, tmax + 0.1), ylim = c(0, 8), expand = FALSE) +
     scale_x_continuous(breaks = seq(0, tmax, 1), labels = seq(0, tmax, 1)) +
     scale_fill_manual(values = c("gray90", "gray60"), guide = "none") +
     scale_color_manual(
@@ -210,7 +215,7 @@ inf_plt <- ggplot(inf_dt) +
 
 print("PLOTTING VE DATA")
 
-true_vax_protection <- as.numeric(pars$vax_efficacy) * 100
+true_vax_protection <- as.numeric(pars$true_vax_protection) * 100
 
 # remove early noisy ve trajectory
 ve_dt <- ve_dt %>%

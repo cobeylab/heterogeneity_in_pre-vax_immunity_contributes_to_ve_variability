@@ -15,10 +15,22 @@ set.seed(0)
 if (interactive()) {
     parser <- OptionParser()
     parser <- add_option(parser, "--config", help = "path to config TOML file (rel path from this script)")
+    parser <- add_option(
+        parser,
+        "--example",
+        default = FALSE,
+        help = "generate figure from example simulation data (default = false)"
+    )
     parsed_args <- parse_args(parser, args = c("--config=fig3/fig3.toml"))
 } else {
     parser <- OptionParser()
     parser <- add_option(parser, "--config", help = "path to config TOML file (rel path from this script)")
+    parser <- add_option(
+        parser,
+        "--example",
+        default = FALSE,
+        help = "generate figure from example simulation data (default = false)"
+    )
     parsed_args <- parse_args(parser)
 }
 
@@ -74,11 +86,12 @@ unvax_test_neg_infections <- function(time, beta, pars, shift = 0.5) {
 
 print("CLEANING INFECTION DATA AND ESTIMATING TEST-NEG INFECTIONS")
 
-per_10k <- 1e3 / pars$pop_size
+per_1k <- 1e3 / pars$pop_size
+per_1k_vax <- 1e3 / (pars$pop_size * pars$vax_coverage)
+per_1k_unvax <- 1e3 / (pars$pop_size * (1 - pars$vax_coverage))
 
 # gather test-positive and test-negative infections and adjust per 10k people
 inf_dt <- results %>%
-    filter(t > 0.005) %>%
     mutate(
         step = t / pars$dt,
         year = ceiling(t),
@@ -86,65 +99,67 @@ inf_dt <- results %>%
     ) %>%
     group_by(exp, t) %>%
     mutate(
-        v_tp_inf = mean(vax_inf) * per_10k,
-        u_tp_inf = mean(unvax_inf) * per_10k,
-        v_tn_inf = vax_test_neg_infections(t, beta_test_neg, pars) * per_10k,
-        u_tn_inf = unvax_test_neg_infections(t, beta_test_neg, pars) * per_10k
+        v_tp_inf = mean(vax_inf) * per_1k_vax,
+        u_tp_inf = mean(unvax_inf) * per_1k_unvax,
+        v_tn_inf = vax_test_neg_infections(t, beta_test_neg, pars) * per_1k_vax,
+        u_tn_inf = unvax_test_neg_infections(t, beta_test_neg, pars) * per_1k_unvax
     ) %>%
     ungroup() %>%
     select(exp, t, year, ends_with("_tp_inf"), ends_with("_tn_inf")) %>%
-    pivot_longer(!c(exp, t, year), values_to = "per_10k_inc") %>%
-    mutate(count = as.integer(per_10k_inc / per_10k))
+    pivot_longer(!c(exp, t, year), values_to = "per_1k_inc")
 
 # generate linelists from the counts of cases and controls
 vax_tp_linelist <- inf_dt %>%
     filter(name == "v_tp_inf") %>%
     mutate(
-        count = as.integer(per_10k_inc / per_10k),
+        count = round(per_1k_inc / per_1k_vax),
         vax = 1,
         inf = 1
     ) %>%
-    select(-c(per_10k_inc, exp, name)) %>%
+    select(-c(per_1k_inc, exp, name)) %>%
     uncount(count)
 
 vax_tn_linelist <- inf_dt %>%
     filter(name == "v_tn_inf") %>%
     mutate(
-        count = as.integer(per_10k_inc / per_10k),
+        count = round(per_1k_inc / per_1k_vax),
         vax = 1,
         inf = 0
     ) %>%
-    select(-c(per_10k_inc, exp, name)) %>%
+    select(-c(per_1k_inc, exp, name)) %>%
     uncount(count)
 
 unvax_tp_linelist <- inf_dt %>%
     filter(name == "u_tp_inf") %>%
     mutate(
-        count = as.integer(per_10k_inc / per_10k),
+        count = round(per_1k_inc / per_1k_unvax),
         vax = 0,
         inf = 1
     ) %>%
-    select(-c(per_10k_inc, exp, name)) %>%
+    select(-c(per_1k_inc, exp, name)) %>%
     uncount(count)
 
 unvax_tn_linelist <- inf_dt %>%
     filter(name == "u_tn_inf") %>%
     mutate(
-        count = as.integer(per_10k_inc / per_10k),
+        count = round(per_1k_inc / per_1k_unvax),
         vax = 0,
         inf = 0
     ) %>%
-    select(-c(per_10k_inc, exp, name)) %>%
+    select(-c(per_1k_inc, exp, name)) %>%
     uncount(count)
 
 # combine the linelists together
 # a random sample of the total linelists for each year is used to minimize memory usage
 # and generate sample sizes small enough for conditional logistic regression to succeeed
-sample_prop <- 0.0015
+# the sample fraction is higher when using the included example data, since the population
+# size is much smaller than the full simulation
+sample_prop <- ifelse(parsed_args[["example"]], 0.05, 0.0015)
+year_to_two_week_block <- 2 / 52 # 2 weeks per block / 52 weeks per year
 
 linelist <- bind_rows(vax_tp_linelist, vax_tn_linelist,
                       unvax_tp_linelist, unvax_tn_linelist) %>%
-    mutate(block = as.integer((t %/% 0.04) - ((year - 1) * 25))) %>%
+    mutate(block = floor((t / year_to_two_week_block) - ((year - 1) * (1 / year_to_two_week_block)))) %>%
     group_by(year) %>%
     nest() %>%
     mutate(sample_data = map(data, function(x) slice_sample(x, prop = sample_prop))) %>%
@@ -157,6 +172,8 @@ print("CALCULATING VE ESTIMATES")
 
 # estimate annual VE estimates and calculate average absolute difference between
 # regression-based VE and VE from cumulative attack rates
+# we aproximate the population size using the sampling proportion and estimate
+# vaccinated and unvaccinated population sizes using the vax_coverage parameter
 sample_tot_pop_size <- pars$pop_size * sample_prop
 
 final_ve_dt <- linelist %>%
@@ -176,10 +193,10 @@ ve_comp <- final_ve_dt %>%
     summarize(
         mean_diff = mean(ve_diff, na.rm = TRUE),
         lower_diff = quantile(ve_diff, probs = c(0.025), na.rm = TRUE),
-        upper_diff = quantile(ve_diff, probs = c(0.925), na.rm = TRUE)
+        upper_diff = quantile(ve_diff, probs = c(0.975), na.rm = TRUE)
     )
 
-print("Difference in VE rel. to VE^cumulative (mean, 95% IQR)")
+print("Difference in VE rel. to VE^cumulative (mean, 95% interval)")
 print(ve_comp)
 
 print("CLEANING SUSCEPTIBILITY DATA")
@@ -236,7 +253,7 @@ GeomSplitViolin <- ggproto("GeomSplitViolin", GeomViolin,
                            draw_group = function(self, data, ..., draw_quantiles = NULL) {
     data <- transform(data, xminv = x - violinwidth * (x - xmin), xmaxv = x + violinwidth * (xmax - x))
     grp <- data[1, "group"]
-    newdata <- plyr::arrange(transform(data, x = if (grp %% 2 == 1) xminv else xmaxv), if (grp %% 2 == 1) y else -y)
+    newdata <- dplyr::arrange(transform(data, x = if (grp %% 2 == 1) xminv else xmaxv), if (grp %% 2 == 1) y else -y)
     newdata <- rbind(newdata[1, ], newdata, newdata[nrow(newdata), ], newdata[1, ])
     newdata[c(1, nrow(newdata) - 1, nrow(newdata)), "x"] <- round(newdata[1, "x"])
 
@@ -267,7 +284,7 @@ geom_split_violin <- function(mapping = NULL, data = NULL, stat = "ydensity", po
 print("PLOTTING INFECTION DATA")
 
 tmax <- as.numeric(pars$tmax)
-true_vax_protection <- as.numeric(pars$vax_efficacy) * 100
+true_vax_protection <- as.numeric(pars$true_vax_protection) * 100
 
 inf_plt <- ggplot(inf_dt) +
     geom_rect(
@@ -278,12 +295,12 @@ inf_plt <- ggplot(inf_dt) +
     ) +
     aes(
         x = t,
-        y = per_10k_inc,
+        y = per_1k_inc,
         color = name,
         linetype = name
     ) + 
     geom_line(linewidth = 1) +
-    coord_cartesian(xlim = c(0, tmax + 0.1), ylim = c(0, 4), expand = FALSE) +
+    coord_cartesian(xlim = c(0, tmax + 0.1), ylim = c(0, 8), expand = FALSE) +
     scale_x_continuous(breaks = seq(0, tmax, 1), labels = seq(0, tmax, 1)) +
     scale_fill_manual(values = c("gray90", "gray60"), guide = "none") +
     scale_color_manual(
@@ -441,10 +458,15 @@ plt <- plot_grid(
 )
 
 fig_path <- here("plots", "supplemental_figs")
+fig_filename <- ifelse(
+    parsed_args[["example"]],
+    "example_multiyear_simulation_ve_comparison",
+    "multiyear_simulation_ve_comparison"
+)
 dir.create(fig_path)
 
 ggsave(
-  here(fig_path, "multiyear_simulation_ve_comparison.png"),
+  here(fig_path, paste0(fig_filename, ".png")),
   plt,
   width = 6,
   height = 9,
@@ -453,7 +475,7 @@ ggsave(
 )
 
 ggsave(
-  here(fig_path, "multiyear_simulation_ve_comparison.pdf"),
+  here(fig_path, paste0(fig_filename, ".pdf")),
   plt,
   width = 6,
   height = 9,

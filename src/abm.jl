@@ -52,8 +52,137 @@ end
     vaccination_checkpoint::F     # time point when re-vaccination occurs
     t_vax_start::F                # time when vaccination first occurs
 
-    vax_efficacy::F               # true vaccine protection
+    true_vax_protection::F        # true vaccine protection
     vax_imm_halflife::F           # half life for exponential waning of vaccine immunity
+end
+
+function warn_if_invalid(valid, message, value)
+    if !valid
+        println(message, " (current value: ", value, ")")
+    end
+end
+
+# Performs validation of user-defined parameters from the TOML config
+function validate_parameters(par::Parameters)
+    checks::Vector{Bool} = []
+
+    # time step must end in 1 or 5 so that it creates an integral number of steps
+    dt_valid = string(par.dt)[end] == '1' || string(par.dt)[end] == '5'
+    push!(checks, dt_valid)
+    warn_if_invalid(
+        dt_valid,
+        "dt_valid must end in 1 or 5 to create an integral number of steps",
+        par.dt
+    )
+
+    # population must have at least one person
+    pop_size_valid = par.pop_size > 0
+    push!(checks, pop_size_valid)
+    warn_if_invalid(pop_size_valid, "pop_size must be larger than zero", par.pop_size)
+
+    # infection hazards must be zero or postive
+    beta_valid = par.beta >= 0
+    push!(checks, beta_valid)
+    warn_if_invalid(
+        beta_valid,
+        "beta must be larger then or equal to zero",
+        par.beta
+    )
+
+    beta_boosted_valid = par.beta_boosted >= 0
+    push!(checks, beta_boosted_valid)
+    warn_if_invalid(
+        beta_boosted_valid,
+        "beta_boosted must be larger then or equal to zero",
+        par.beta_boosted
+    )
+
+    # seasonal forcing amplitude must be between 0 and 1
+    seasonality_amplitude_valid = par.seasonality_amplifier >= 0.0 && par.seasonality_amplifier <= 1.0
+    push!(checks, seasonality_amplitude_valid)
+    warn_if_invalid(
+        seasonality_amplitude_valid,
+        "seasonality_amplitude must be between 0.0 and 1.0",
+        par.seasonality_amplifier
+    )
+
+    # recovery rate must be greater than zero
+    gamma_valid = par.gamma > 0
+    push!(checks, gamma_valid)
+    warn_if_invalid(gamma_valid, "gamma must be greater than zero", par.gamma)
+
+    # pre-vaccination susceptibility means must be greater than zero
+    vax_mean_pre_vax_suscep_valid = par.vax_mean_pre_vax_suscep > 0
+    push!(checks, vax_mean_pre_vax_suscep_valid)
+    warn_if_invalid(
+        vax_mean_pre_vax_suscep_valid,
+        "vax_mean_pre_vax_suscep must be greater than zero",
+        par.vax_mean_pre_vax_suscep
+    )
+
+    unvax_mean_pre_vax_suscep_valid = par.unvax_mean_pre_vax_suscep > 0
+    push!(checks, unvax_mean_pre_vax_suscep_valid)
+    warn_if_invalid(
+        unvax_mean_pre_vax_suscep_valid,
+        "unvax_mean_pre_vax_suscep must be greater than zero",
+        par.unvax_mean_pre_vax_suscep
+    )
+
+    # pre-vaccination susceptibility distribution shape parameters must be greater than zero
+    vax_pre_vax_suscep_shape_valid = par.vax_pre_vax_suscep_shape >= 0
+    push!(checks, vax_pre_vax_suscep_shape_valid)
+    warn_if_invalid(
+        vax_pre_vax_suscep_shape_valid,
+        "vax_pre_vax_suscep_shape must be greater than or equal to zero",
+        par.vax_pre_vax_suscep_shape
+    )
+
+    unvax_pre_vax_suscep_shape_valid = par.unvax_pre_vax_suscep_shape >= 0
+    push!(checks, unvax_pre_vax_suscep_shape_valid)
+    warn_if_invalid(
+        unvax_pre_vax_suscep_shape_valid,
+        "unvax_pre_vax_suscep_shape must be greater than or equal to zero",
+        par.unvax_pre_vax_suscep_shape
+    )
+
+    # infection-derived immunity waning rate must be greater than zero
+    inf_imm_halflife_valid = par.inf_imm_halflife >= 0
+    push!(checks, inf_imm_halflife_valid)
+    warn_if_invalid(
+        inf_imm_halflife_valid,
+        "inf_imm_halflife must be greater than or equal to zero",
+        par.inf_imm_halflife
+    )
+
+    # vaccination coverage must be between 0.0 and 1.0
+    vax_coverage_valid = par.vax_coverage >= 0.0 && par.vax_coverage <= 1.0
+    push!(checks, vax_coverage_valid)
+    warn_if_invalid(vax_coverage_valid, "vax_coverage must be between 0.0 and 1.0", par.vax_coverage)
+
+    # vaccination status auto-correlation must be between 0.0 and 1.0
+    pr_vax_to_vax_valid = par.pr_vax_to_vax >= (2.0 - (1.0 / par.vax_coverage)) && par.pr_vax_to_vax <= 1.0
+    push!(checks, pr_vax_to_vax_valid)
+    warn_if_invalid(pr_vax_to_vax_valid, "pr_vax_to_vax must be between (2 - (1/vax coverage)) and 1.0", par.pr_vax_to_vax)
+
+    # true vaccine protection must be between 0.0 and 1.0
+    true_vax_protection_valid = par.true_vax_protection >= 0.0 && par.true_vax_protection <= 1.0
+    push!(checks, true_vax_protection_valid)
+    warn_if_invalid(
+        true_vax_protection_valid,
+        "true_vax_protection must be between 0.0 and 1.0",
+        par.true_vax_protection
+    )
+
+    # vaccine-derived immunity waning rate must be greater than zero
+    vax_imm_halflife_valid = par.vax_imm_halflife >= 0
+    push!(checks, vax_imm_halflife_valid)
+    warn_if_invalid(
+        vax_imm_halflife_valid,
+        "vax_imm_halflife must be greater than or equal to zero",
+        par.vax_imm_halflife
+    )
+
+    return sum(checks) == length(checks)
 end
 
 # Helper function to create parameter object from TOML file
@@ -73,7 +202,7 @@ end
 # Object to store vaccination data
 @kwdef struct Vaccination
     t_vaccination::Float64 = -1.0   # time of vaccination
-    vax_efficacy::Float64 = -1.0    # starting true vaccine protection
+    true_vax_protection::Float64 = -1.0    # starting true vaccine protection
 end
 
 # Object to store data for individuals
@@ -112,14 +241,14 @@ function is_vaccinated(p::Person)
 end
 
 # Get a vaccinated person's current vaccine protection
-function current_vax_efficacy(par::Parameters, p::Person)
+function current_true_vax_protection(par::Parameters, p::Person)
     @assert is_vaccinated(p) == true
     if par.vax_imm_halflife == zero(par.vax_imm_halflife)
-        return p.vax_hist[end].vax_efficacy
+        return p.vax_hist[end].true_vax_protection
     else
         t_delta = p.tnow - p.vax_hist[end].t_vaccination
         waning_mult = exp(-t_delta * (log(2) / par.vax_imm_halflife))
-        return p.vax_hist[end].vax_efficacy * waning_mult
+        return p.vax_hist[end].true_vax_protection * waning_mult
     end
 end
 
@@ -150,7 +279,7 @@ end
 function infect!(par::Parameters, p::Person, time)
     inf = Infection(
         vax_status = vax_status(p),
-        vax_eff_at_inf = is_vaccinated(p) ? current_vax_efficacy(par, p) : -1.0,
+        vax_eff_at_inf = is_vaccinated(p) ? current_true_vax_protection(par, p) : -1.0,
         t_infection = time,
         suscep_at_inf = p.current_suscep
     )
@@ -208,7 +337,7 @@ function init_pop(par::Parameters)
 
         if vs == Vaccinated
             people[i].vax_status = Vaccinated::VaccinationStatus
-            vax = Vaccination(t_vaccination = 0.0, vax_efficacy = par.vax_efficacy)
+            vax = Vaccination(t_vaccination = 0.0, true_vax_protection = par.true_vax_protection)
             push!(people[i].vax_hist, vax)
         end
 
@@ -221,7 +350,7 @@ end
 # Helper function for an individual to become vaccinated
 function become_vaccinated!(par::Parameters, p::Person, time)
     p.vax_status = Vaccinated::VaccinationStatus
-    vax = Vaccination(t_vaccination = time, vax_efficacy = par.vax_efficacy)
+    vax = Vaccination(t_vaccination = time, true_vax_protection = par.true_vax_protection)
     push!(p.vax_hist, vax)
 end
 
@@ -253,10 +382,17 @@ function current_suscep(par::Parameters, p::Person, time)
         return p.base_suscep
     else
         if has_been_infected(p)
-            # if the individual has been infected before, calculate waned infection immunity
-            t_delta = time - last_recovery_time(p)
-            waning_mult = 1 - exp(-t_delta * (log(2) / par.inf_imm_halflife))
-            return p.base_suscep * waning_mult
+            t_recov = last_recovery_time(p)
+            if t_recov == -1.0
+                # this person is mid-infection, and has susceptibility = 0
+                return zero(p.base_suscep)
+            else
+                # this person is not currently infected but has been previously infected
+                t_delta = time - last_recovery_time(p)
+                # calculate waned infection immunity
+                waning_mult = 1 - exp(-t_delta * (log(2) / par.inf_imm_halflife))
+                return p.base_suscep * waning_mult
+            end
         else
             # otherwise return initial susceptibility
             return p.base_suscep
@@ -278,7 +414,7 @@ function update_susceptible!(par::Parameters, p::Person, step_tmax::Real)
 
     # calculate force of infection accoutning for susceptibility and any vaccine protection
     foi = p.current_suscep * p.foi
-    foi *= is_vaccinated(p) ? 1 - current_vax_efficacy(par, p) : 1.0
+    foi *= is_vaccinated(p) ? 1 - current_true_vax_protection(par, p) : 1.0
 
     # sample time to next infection based on current force of infection
     tau = p.tnow + sample_exponential(1 / foi)
@@ -324,7 +460,7 @@ end
 # Calculate seasonally forced infection hazard
 function calculate_beta(par::Parameters, time)
     # decide if this is the time period when the increased hazard is used
-    use_beta_boosted = (time > par.t_boost_transmission) && (time < (par.t_boost_transmission + 1.0))
+    use_beta_boosted = (time >= par.t_boost_transmission) && (time < (par.t_boost_transmission + 1.0))
     beta = use_beta_boosted ? par.beta_boosted : par.beta
 
     # calculate seasonally forced infection hazard
@@ -387,10 +523,15 @@ function safe_shrink_and_summarize!(vec, len, fun)
     return length(vec) > 0 ? fun(vec) : -1.0
 end
 
+# Helper function to consistently calculate sim time from the current step and dt size
+function calculate_sim_time(step, dt; n_digits = 5)
+    return round(step * dt; digits = n_digits)
+end
+
 # Helper function to determin if a person was infected in the current time step
 function infected_this_step(p::Person, step, dt)
-    t_min = (step - 1) * dt
-    t_max = step * dt
+    t_min = calculate_sim_time(step - 1, dt)
+    t_max = calculate_sim_time(step, dt)
     return has_been_infected(p) && last_infection_time(p) >= t_min && last_infection_time(p) < t_max
 end
 
@@ -459,6 +600,13 @@ end
 
 # Main simulation function
 function simulate(par::Parameters, rep::Real)
+    # only continue if parameters are valid
+    params_are_valid = validate_parameters(par)
+    if !params_are_valid
+        println("ERROR: parameter validation failed")
+        exit(1)
+    end
+
     # initialize the RNG and time-keeping variables
     Random.seed!(rep)
     tnow = 0.0
@@ -493,7 +641,7 @@ function simulate(par::Parameters, rep::Real)
 
         # step to the next time point
         step += 1
-        tnow = round(par.dt * step, digits = 5)
+        tnow = calculate_sim_time(step, par.dt)
 
         # simulate events that occur this time step for all people
         for p in people

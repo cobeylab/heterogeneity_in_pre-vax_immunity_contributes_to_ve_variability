@@ -11,7 +11,7 @@ source(here("src", "data_generation.R"))
 #   return(ifelse(abs(x) < 1e-7, 0, signif(x, digits = sigdig)))
 # }
 
-# Scenario options (no waning, no continuous risk distributions, VE from cumulative attack rates)
+# Scenario options (waning vax protection, no continuous risk distributions, VE from cumulative attack rates)
 opts = list(
     waning = TRUE,
     heterogeneity = FALSE,
@@ -64,8 +64,8 @@ lewnard_plt <- ggplot(lewnard_dt) +
     ) +
     annotate(
         "label",
-        x = 82.5,
-        y = 10,
+        x = 80,
+        y = 15,
         label = "Largest distance between VE\nand true protection occurs at\n58% true vaccine protection",
         color = "maroon",
         size = 3

@@ -20,3 +20,7 @@
 ### Required Julia libraries
 
 `ArgParse`, `CSV`, `DataFramesMeta`, `Distributions`, `DrWatson`, `Random`, `Reexport`, `TOML`
+
+The julia project can be set up by running `julia --project=. --eval "using Pkg; Pkg.instantiate()"` from the project's root directory.
+
+Most figures can be generated without julia, using only R and the required libraries. See `scripts/README.md` for more details.

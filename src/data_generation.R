@@ -21,8 +21,7 @@ generate_par_sets <- function(p, include_early = TRUE, early_time = 1e-3) {
 # o --> list of options (o$instantaneous must be FALSE)
 generate_counts <- function(p, o) {
     if (o$instantaneous == TRUE) {
-        print("ERROR: generate_counts must have o$instantaneous = FALSE")
-        exit()
+        stop("ERROR: generate_counts must have o$instantaneous = FALSE")
     }
 
     # Generate time points
@@ -72,7 +71,7 @@ ve_from_logreg <- function(coef) {
 
 # Calculate VE using unconditional logistic regression adjusting for time.
 estimate_ve_uncond_logreg <- function(data) {
-    reg <- glm(inf ~ vax + block, data = data, family = binomial)
+    reg <- glm(inf ~ vax + factor(block), data = data, family = binomial)
     return(ve_from_logreg(reg$coefficients["vax"]))
 }
 
@@ -89,7 +88,7 @@ estimate_math_ve <- function(pars, opts) {
 
 # Estimate starting VE from vaccine direct effects and mean pre-vaccination risk.
 estimate_ve_starting <- function(x) {
-    return(1 - (x$theta_0 * (x$epsilon_v / x$epsilon_u)))
+    return((1 - (x$theta_0 * (x$epsilon_v / x$epsilon_u))) * 100)
 }
 
 # Estimate VE using analytical cohort-like VE model.
@@ -145,7 +144,7 @@ estimate_ve_cohort_sim <- function(x, year, tot_pop_size, vax_coverage) {
         group_by(vax) %>%
         summarize(
             tot_infs = n(),
-            tot_pyar_avoided = tot_pop_size - sum(pyar_avoided)
+            tot_pyar_avoided = sum(pyar_avoided)
         ) %>%
         ungroup() %>%
         # calculate sampled population size by vaccination status
