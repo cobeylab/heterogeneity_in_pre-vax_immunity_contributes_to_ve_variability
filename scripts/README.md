@@ -97,9 +97,9 @@ Commands: `cd fig3`, `bash ./fig3.sh fig3_lower_vax_direct_effect.toml`
 
 ## Validation
 
-### Validation of codebase against main-text equations 1a,b,c
+### Validation of codebase against main-text equations 1a,b,c and supplemental equations S.44,45,48,49
 
-The `validation.R` script re-implements main-text equations for instantaneous, cumulative, and cohort VE estimates. It then compares the VE estimates generated from the code in `src` against the re-implemented analytical estimates. The scripts counts the number of times the re-implemented and codebase-derived VE estimates differ by more than 1e-10. VE estimates are compared across 24,300 parameter combinations (varying the exogenous infection hazard, true vaccine protection, and pre-vaccination susceptibility distribution means and variances).
+The `validation.R` script re-implements main-text and supplemental equations for instantaneous, cumulative, and cohort VE estimates with and without waning true vaccine protection. It then compares the VE estimates generated from the code in `src` against the re-implemented analytical estimates. The scripts counts the number of times the re-implemented and codebase-derived VE estimates differ by more than 1e-10. VE estimates are compared across over 20,000 parameter combinations (varying the exogenous infection hazard, true vaccine protection, vaccine protection waning rate, and pre-vaccination susceptibility distribution means and variances) and across a 200-day epidemic.
 
 Command: `Rscript validation/validation.R`
 
