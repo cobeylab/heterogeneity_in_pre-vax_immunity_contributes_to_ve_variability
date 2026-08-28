@@ -2,6 +2,12 @@ Holds scripts used to generate main-text and supplementary figures. All example 
 
 ---
 
+## Generate all figures without running simulation model
+
+Running the helper script will create all main-text and supplemental figures. Figures that rely on simulated data instead are generated using data from example simulations (see `fig3/smaller_pop_size` for config files). The example simulations are idential to the full simulations except that the population size is reduced from 5 million to 100,000 individuals, allowing the simulated data to be saved to GitHub and included in clones. This permits users to re-create figures without needed to setup `julia` and run three 1-hour long simulations. The example simulation figures are more noisy than the manuscript versions, but the general results are similar.
+
+---
+
 ## Main text figures
 
 ### Figure 1: VE vs. differential mean pre-vaccination infection risk
@@ -79,6 +85,13 @@ Command: `Rscript supplemental_figures/ve_estimate_comparison.R`
 Figure showing how differential mean pre-vaccination risk and waning vaccine protection can result in VE crossing zero.
 
 Command: `Rscript supplemental_figures/ve_with_waning_vax_protection_sensitivity_to_pre-vax_means.R`
+
+### Fig. 3 with higher or lower true vaccine protection
+
+Re-runs the simulation model with idential parameters as in `fig3/fig3.toml` except with higher (90%) or lower (30%) true vaccine protection.
+
+Commands: `cd fig3`, `bash ./fig3.sh fig3_higher_vax_direct_effect.toml`
+Commands: `cd fig3`, `bash ./fig3.sh fig3_lower_vax_direct_effect.toml`
 
 ## Validation
 

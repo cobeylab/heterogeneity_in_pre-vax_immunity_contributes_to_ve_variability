@@ -15,10 +15,22 @@ set.seed(0)
 if (interactive()) {
     parser <- OptionParser()
     parser <- add_option(parser, "--config", help = "path to config TOML file (rel path from this script)")
+    parser <- add_option(
+        parser,
+        "--example",
+        default = FALSE,
+        help = "generate figure from example simulation data (default = false)"
+    )
     parsed_args <- parse_args(parser, args = c("--config=fig3/fig3.toml"))
 } else {
     parser <- OptionParser()
     parser <- add_option(parser, "--config", help = "path to config TOML file (rel path from this script)")
+    parser <- add_option(
+        parser,
+        "--example",
+        default = FALSE,
+        help = "generate figure from example simulation data (default = false)"
+    )
     parsed_args <- parse_args(parser)
 }
 
@@ -140,7 +152,9 @@ unvax_tn_linelist <- inf_dt %>%
 # combine the linelists together
 # a random sample of the total linelists for each year is used to minimize memory usage
 # and generate sample sizes small enough for conditional logistic regression to succeeed
-sample_prop <- 0.0015
+# the sample fraction is higher when using the included example data, since the population
+# size is much smaller than the full simulation
+sample_prop <- ifelse(parsed_args[["example"]], 0.05, 0.0015)
 year_to_two_week_block <- 2 / 52 # 2 weeks per block / 52 weeks per year
 
 linelist <- bind_rows(vax_tp_linelist, vax_tn_linelist,
@@ -444,10 +458,15 @@ plt <- plot_grid(
 )
 
 fig_path <- here("plots", "supplemental_figs")
+fig_filename <- ifelse(
+    parsed_args[["example"]],
+    "example_multiyear_simulation_ve_comparison",
+    "multiyear_simulation_ve_comparison"
+)
 dir.create(fig_path)
 
 ggsave(
-  here(fig_path, "multiyear_simulation_ve_comparison.png"),
+  here(fig_path, paste0(fig_filename, ".png")),
   plt,
   width = 6,
   height = 9,
@@ -456,7 +475,7 @@ ggsave(
 )
 
 ggsave(
-  here(fig_path, "multiyear_simulation_ve_comparison.pdf"),
+  here(fig_path, paste0(fig_filename, ".pdf")),
   plt,
   width = 6,
   height = 9,
