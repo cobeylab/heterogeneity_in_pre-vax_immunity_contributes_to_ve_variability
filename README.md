@@ -1,4 +1,4 @@
-# Heterogeneity in pre-vaccination population immunity can contribute to variability in vaccine effectiveness
+# Heterogeneity in pre-vaccination population immunity can contribute to variability in vaccine effectiveness estimates
 
 ## Code repository for manuscript analyses and figures
 
